@@ -22,8 +22,8 @@ class AddSnippetViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            // Si "getCategorias()" está en rojo, cámbialo por la sugerencia del IDE
-            repository.getCategorias().collect { categorias ->
+            // Usamos el nombre real definido por tu compañero en el repositorio
+            repository.obtenerCategorias().collect { categorias ->
                 _uiState.update { it.copy(categorias = categorias) }
             }
         }
@@ -41,16 +41,15 @@ class AddSnippetViewModel @Inject constructor(
         val state = _uiState.value
         if (state.nombre.isNotBlank() && state.contenido.isNotBlank() && state.selectedCategoriaId != null) {
             viewModelScope.launch {
-                // Parámetros actualizados según la entidad de tu compañero
                 val newSnippet = SnippetEntity(
                     titulo = state.nombre,
                     contenido = state.contenido,
                     categoriaId = state.selectedCategoriaId,
-                    lenguaje = "Bash", // Valor por defecto
+                    lenguaje = "Kotlin / Bash",
                     fechaCreacion = System.currentTimeMillis()
                 )
-                // Si "addSnippet" está en rojo, cámbialo por la sugerencia del IDE
-                repository.addSnippet(newSnippet)
+                // Usamos el nombre real de inserción definido en el repositorio
+                repository.insertarSnippet(newSnippet)
                 _uiState.update { it.copy(isSaved = true) }
             }
         }
