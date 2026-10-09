@@ -1,5 +1,6 @@
 package com.devvault.app.presentation.categoria
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -40,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.ui.theme.DevVaultTheme
+import com.devvault.app.util.copiarAlPortapapeles
 
 private val ColorEstrella = Color(0xFFF5C94B)
 
@@ -50,12 +53,16 @@ fun CategoriaDetailRoute(
     viewModel: CategoriaDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val context = LocalContext.current
     CategoriaDetailScreen(
         uiState = uiState,
         onBack = onBack,
         onSnippetClick = onSnippetClick,
         onToggleFavorito = viewModel::onToggleFavorito,
-        onCopiar = {}
+        onCopiar = { texto ->
+            copiarAlPortapapeles(context, texto)
+            Toast.makeText(context, "Copiado", Toast.LENGTH_SHORT).show()
+        }
     )
 }
 
