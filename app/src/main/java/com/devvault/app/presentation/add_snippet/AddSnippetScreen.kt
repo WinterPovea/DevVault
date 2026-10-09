@@ -10,12 +10,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.devvault.app.data.local.entity.CategoriaEntity
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddSnippetScreen(
     onNavigateBack: () -> Unit,
@@ -27,6 +29,28 @@ fun AddSnippetScreen(
         if (uiState.isSaved) onNavigateBack()
     }
 
+    AddSnippetContent(
+        uiState = uiState,
+        onNombreChange = viewModel::onNombreChange,
+        onContenidoChange = viewModel::onContenidoChange,
+        onCategoriaSelected = viewModel::onCategoriaSelected,
+        toggleDropdown = viewModel::toggleDropdown,
+        onSave = viewModel::saveSnippet,
+        onNavigateBack = onNavigateBack
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddSnippetContent(
+    uiState: AddSnippetUiState,
+    onNombreChange: (String) -> Unit,
+    onContenidoChange: (String) -> Unit,
+    onCategoriaSelected: (Long) -> Unit, // Corregido a Long
+    toggleDropdown: (Boolean) -> Unit,
+    onSave: () -> Unit,
+    onNavigateBack: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -56,7 +80,7 @@ fun AddSnippetScreen(
             Text("Nombre", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
             OutlinedTextField(
                 value = uiState.nombre,
-                onValueChange = viewModel::onNombreChange,
+                onValueChange = onNombreChange,
                 placeholder = { Text("Snippet Name") },
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
@@ -72,7 +96,7 @@ fun AddSnippetScreen(
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 ExposedDropdownMenuBox(
                     expanded = uiState.expandedDropdown,
-                    onExpandedChange = viewModel::toggleDropdown,
+                    onExpandedChange = toggleDropdown,
                     modifier = Modifier.weight(1f)
                 ) {
                     OutlinedTextField(
@@ -91,19 +115,19 @@ fun AddSnippetScreen(
                     )
                     ExposedDropdownMenu(
                         expanded = uiState.expandedDropdown,
-                        onDismissRequest = { viewModel.toggleDropdown(false) }
+                        onDismissRequest = { toggleDropdown(false) }
                     ) {
                         uiState.categorias.forEach { categoria ->
                             DropdownMenuItem(
                                 text = { Text(categoria.nombre) },
-                                onClick = { viewModel.onCategoriaSelected(categoria.id) }
+                                onClick = { onCategoriaSelected(categoria.id) }
                             )
                         }
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 IconButton(
-                    onClick = { /* Acción para agregar categoría en el futuro */ },
+                    onClick = { /* Acción futura */ },
                     modifier = Modifier
                         .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(12.dp))
                         .size(56.dp)
@@ -120,7 +144,7 @@ fun AddSnippetScreen(
             Box(modifier = Modifier.fillMaxWidth().weight(1f)) {
                 OutlinedTextField(
                     value = uiState.contenido,
-                    onValueChange = viewModel::onContenidoChange,
+                    onValueChange = onContenidoChange,
                     placeholder = { Text("Code goes here...") },
                     modifier = Modifier.fillMaxSize(),
                     shape = RoundedCornerShape(12.dp),
@@ -133,7 +157,7 @@ fun AddSnippetScreen(
                 )
 
                 Button(
-                    onClick = viewModel::saveSnippet,
+                    onClick = onSave,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(16.dp),
@@ -147,5 +171,27 @@ fun AddSnippetScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, name = "Agregar Snippet Screen")
+@Composable
+fun AddSnippetPreview() {
+    MaterialTheme {
+        AddSnippetContent(
+            uiState = AddSnippetUiState(
+                nombre = "Levantar Contenedor",
+                contenido = "docker-compose up -d",
+                // Corregido: id con 'L' y parámetro color agregado
+                categorias = listOf(CategoriaEntity(id = 1L, nombre = "Docker", color = 0)),
+                selectedCategoriaId = 1L
+            ),
+            onNombreChange = {},
+            onContenidoChange = {},
+            onCategoriaSelected = {},
+            toggleDropdown = {},
+            onSave = {},
+            onNavigateBack = {}
+        )
     }
 }

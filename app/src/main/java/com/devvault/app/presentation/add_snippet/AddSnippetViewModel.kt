@@ -21,9 +21,9 @@ class AddSnippetViewModel @Inject constructor(
     val uiState: StateFlow<AddSnippetUiState> = _uiState.asStateFlow()
 
     init {
-        // Carga las categorías creadas para el menú desplegable
         viewModelScope.launch {
-            repository.getAllCategorias().collect { categorias ->
+            // Si "getCategorias()" está en rojo, cámbialo por la sugerencia del IDE
+            repository.getCategorias().collect { categorias ->
                 _uiState.update { it.copy(categorias = categorias) }
             }
         }
@@ -33,22 +33,24 @@ class AddSnippetViewModel @Inject constructor(
 
     fun onContenidoChange(contenido: String) = _uiState.update { it.copy(contenido = contenido) }
 
-    fun onCategoriaSelected(categoriaId: Int) = _uiState.update { it.copy(selectedCategoriaId = categoriaId, expandedDropdown = false) }
+    fun onCategoriaSelected(categoriaId: Long) = _uiState.update { it.copy(selectedCategoriaId = categoriaId, expandedDropdown = false) }
 
     fun toggleDropdown(expanded: Boolean) = _uiState.update { it.copy(expandedDropdown = expanded) }
 
     fun saveSnippet() {
         val state = _uiState.value
-        // Verifica que los campos no estén vacíos
         if (state.nombre.isNotBlank() && state.contenido.isNotBlank() && state.selectedCategoriaId != null) {
             viewModelScope.launch {
+                // Parámetros actualizados según la entidad de tu compañero
                 val newSnippet = SnippetEntity(
-                    nombre = state.nombre,
-                    codigo = state.contenido,
+                    titulo = state.nombre,
+                    contenido = state.contenido,
                     categoriaId = state.selectedCategoriaId,
-                    isFavorite = false
+                    lenguaje = "Bash", // Valor por defecto
+                    fechaCreacion = System.currentTimeMillis()
                 )
-                repository.insertSnippet(newSnippet)
+                // Si "addSnippet" está en rojo, cámbialo por la sugerencia del IDE
+                repository.addSnippet(newSnippet)
                 _uiState.update { it.copy(isSaved = true) }
             }
         }
