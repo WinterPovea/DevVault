@@ -12,6 +12,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.devvault.app.presentation.categoria.CategoriaDetailRoute
+import com.devvault.app.presentation.categorias.CategoriasRoute
 
 @Composable
 fun DevVaultNavHost(
@@ -28,7 +30,9 @@ fun DevVaultNavHost(
         }
 
         composable<DevVaultRoute.Categorias> {
-            PlaceholderScreen("Categorías")
+            CategoriasRoute(
+                onCategoriaClick = { navController.navigate(DevVaultRoute.CategoriaDetail(it)) }
+            )
         }
 
         composable<DevVaultRoute.Agregar> {
@@ -39,9 +43,10 @@ fun DevVaultNavHost(
             PlaceholderScreen("Favoritos")
         }
 
-        composable<DevVaultRoute.CategoriaDetail> { backStackEntry ->
-            val ruta = backStackEntry.toRoute<DevVaultRoute.CategoriaDetail>()
-            PlaceholderScreen("Categoría #${ruta.categoriaId}")
+        composable<DevVaultRoute.CategoriaDetail> {
+            CategoriaDetailRoute(
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable<DevVaultRoute.SnippetDetail> { backStackEntry ->
