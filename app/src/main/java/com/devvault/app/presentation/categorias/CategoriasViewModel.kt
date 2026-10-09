@@ -7,6 +7,7 @@ import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
@@ -18,18 +19,24 @@ class CategoriasViewModel @Inject constructor(
     repository: DevVaultRepository
 ) : ViewModel() {
 
+    private val busqueda = MutableStateFlow("")
+
     val uiState: StateFlow<CategoriasUiState> =
-        combine<List<CategoriaEntity>, List<SnippetEntity>, CategoriasUiState>(
+        combine<List<CategoriaEntity>, List<SnippetEntity>, String, CategoriasUiState>(
             repository.obtenerCategorias(),
-            repository.obtenerSnippets()
-        ) { categorias, snippets ->
+            repository.obtenerSnippets(),
+            busqueda
+        ) { categorias, snippets, texto ->
             val conteos = snippets.groupingBy { it.categoriaId }.eachCount()
-            CategoriasUiState.Success(
-                categorias.map {
-                    CategoriaConConteo(it.id, it.nombre, it.color, conteos[it.id] ?: 0)
-                }
-            )
+            val filtradas = categorias
+                .filter { it.nombre.contains(texto.trim(), ignoreCase = true) }
+                .map { CategoriaConConteo(it.id, it.nombre, it.color, conteos[it.id] ?: 0) }
+            CategoriasUiState.Success(filtradas, texto)
         }
             .catch { emit(CategoriasUiState.Error(it.message ?: "Error desconocido")) }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CategoriasUiState.Loading)
+
+    fun onBusquedaChange(texto: String) {
+        busqueda.value = texto
+    }
 }

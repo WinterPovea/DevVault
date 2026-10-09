@@ -9,6 +9,9 @@ data class CategoriaConConteo(
 
 sealed interface CategoriasUiState {
     data object Loading : CategoriasUiState
-    data class Success(val categorias: List<CategoriaConConteo>) : CategoriasUiState
+    data class Success(
+        val categorias: List<CategoriaConConteo>,
+        val busqueda: String
+    ) : CategoriasUiState
     data class Error(val mensaje: String) : CategoriasUiState
 }

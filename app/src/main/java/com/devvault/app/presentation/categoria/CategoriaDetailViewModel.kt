@@ -15,11 +15,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class CategoriaDetailViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    repository: DevVaultRepository
+    private val repository: DevVaultRepository
 ) : ViewModel() {
 
     private val categoriaId = savedStateHandle.toRoute<DevVaultRoute.CategoriaDetail>().categoriaId
@@ -38,4 +39,10 @@ class CategoriaDetailViewModel @Inject constructor(
         }
             .catch { emit(CategoriaDetailUiState.Error(it.message ?: "Error desconocido")) }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CategoriaDetailUiState.Loading)
+
+    fun onToggleFavorito(snippet: SnippetEntity) {
+        viewModelScope.launch {
+            repository.actualizarSnippet(snippet.copy(esFavorito = !snippet.esFavorito))
+        }
+    }
 }
