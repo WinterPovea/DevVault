@@ -124,7 +124,7 @@ private fun CategoriaCard(categoria: CategoriaConConteo, onClick: () -> Unit) {
                 modifier = Modifier.padding(top = 12.dp)
             )
             Text(
-                "${categoria.totalSnippets} snippets",
+                if (categoria.totalSnippets == 1) "1 snippet" else "${categoria.totalSnippets} snippets",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -141,7 +141,7 @@ private fun CategoriasScreenPreview() {
                 uiState = CategoriasUiState.Success(
                     categorias = listOf(
                         CategoriaConConteo(1, "Docker", 0xFF2496ED, 20),
-                        CategoriaConConteo(2, "Git", 0xFFF1502F, 10),
+                        CategoriaConConteo(2, "Git", 0xFFF1502F, 1),
                         CategoriaConConteo(3, "SQL", 0xFF4479A1, 15),
                         CategoriaConConteo(4, "Kotlin", 0xFF7F52FF, 7)
                     ),

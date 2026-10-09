@@ -45,4 +45,16 @@ class CategoriaDetailViewModel @Inject constructor(
             repository.actualizarSnippet(snippet.copy(esFavorito = !snippet.esFavorito))
         }
     }
+
+    fun onEditarSnippet(snippet: SnippetEntity, titulo: String, contenido: String) {
+        viewModelScope.launch {
+            repository.actualizarSnippet(snippet.copy(titulo = titulo.trim(), contenido = contenido))
+        }
+    }
+
+    fun onEliminarSnippet(snippet: SnippetEntity) {
+        viewModelScope.launch {
+            repository.eliminarSnippet(snippet)
+        }
+    }
 }

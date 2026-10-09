@@ -45,8 +45,7 @@ fun DevVaultNavHost(
 
         composable<DevVaultRoute.CategoriaDetail> {
             CategoriaDetailRoute(
-                onBack = { navController.popBackStack() },
-                onSnippetClick = { navController.navigate(DevVaultRoute.SnippetDetail(it)) }
+                onBack = { navController.popBackStack() }
             )
         }
 

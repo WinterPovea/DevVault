@@ -1,7 +1,6 @@
 package com.devvault.app.presentation.categoria
 
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,12 +24,17 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -49,7 +54,6 @@ private val ColorEstrella = Color(0xFFF5C94B)
 @Composable
 fun CategoriaDetailRoute(
     onBack: () -> Unit,
-    onSnippetClick: (Long) -> Unit,
     viewModel: CategoriaDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -57,8 +61,9 @@ fun CategoriaDetailRoute(
     CategoriaDetailScreen(
         uiState = uiState,
         onBack = onBack,
-        onSnippetClick = onSnippetClick,
         onToggleFavorito = viewModel::onToggleFavorito,
+        onEditar = viewModel::onEditarSnippet,
+        onEliminar = viewModel::onEliminarSnippet,
         onCopiar = { texto ->
             copiarAlPortapapeles(context, texto)
             Toast.makeText(context, "Copiado", Toast.LENGTH_SHORT).show()
@@ -71,10 +76,46 @@ fun CategoriaDetailRoute(
 fun CategoriaDetailScreen(
     uiState: CategoriaDetailUiState,
     onBack: () -> Unit,
-    onSnippetClick: (Long) -> Unit,
     onToggleFavorito: (SnippetEntity) -> Unit,
+    onEditar: (SnippetEntity, String, String) -> Unit,
+    onEliminar: (SnippetEntity) -> Unit,
     onCopiar: (String) -> Unit
 ) {
+    var snippetAEditar by remember { mutableStateOf<SnippetEntity?>(null) }
+    var snippetAEliminar by remember { mutableStateOf<SnippetEntity?>(null) }
+
+    snippetAEditar?.let { snippet ->
+        EditarSnippetDialog(
+            snippet = snippet,
+            onDismiss = { snippetAEditar = null },
+            onGuardar = { titulo, contenido ->
+                onEditar(snippet, titulo, contenido)
+                snippetAEditar = null
+            }
+        )
+    }
+
+    snippetAEliminar?.let { snippet ->
+        AlertDialog(
+            onDismissRequest = { snippetAEliminar = null },
+            title = { Text("¿Eliminar snippet?") },
+            text = { Text("Se eliminará \"${snippet.titulo}\". Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onEliminar(snippet)
+                        snippetAEliminar = null
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { snippetAEliminar = null }) { Text("Cancelar") }
+            }
+        )
+    }
+
     val titulo = (uiState as? CategoriaDetailUiState.Success)
         ?.let { "Categoría ${it.nombreCategoria}" } ?: "Categoría"
 
@@ -119,9 +160,10 @@ fun CategoriaDetailScreen(
                         items(uiState.snippets, key = { it.id }) { snippet ->
                             SnippetCard(
                                 snippet = snippet,
-                                onClick = { onSnippetClick(snippet.id) },
                                 onToggleFavorito = { onToggleFavorito(snippet) },
-                                onCopiar = { onCopiar(snippet.contenido) }
+                                onCopiar = { onCopiar(snippet.contenido) },
+                                onEditar = { snippetAEditar = snippet },
+                                onEliminar = { snippetAEliminar = snippet }
                             )
                         }
                     }
@@ -133,12 +175,13 @@ fun CategoriaDetailScreen(
 @Composable
 private fun SnippetCard(
     snippet: SnippetEntity,
-    onClick: () -> Unit,
     onToggleFavorito: () -> Unit,
-    onCopiar: () -> Unit
+    onCopiar: () -> Unit,
+    onEditar: () -> Unit,
+    onEliminar: () -> Unit
 ) {
     Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
@@ -173,15 +216,64 @@ private fun SnippetCard(
                     color = MaterialTheme.colorScheme.tertiary
                 )
             }
-            OutlinedButton(
-                onClick = onCopiar,
+            Row(
                 modifier = Modifier.padding(top = 8.dp),
-                shape = RoundedCornerShape(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("⧉ Copiar")
+                OutlinedButton(onClick = onCopiar, shape = RoundedCornerShape(8.dp)) {
+                    Text("⧉ Copiar")
+                }
+                TextButton(onClick = onEditar) { Text("Editar") }
+                TextButton(onClick = onEliminar) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
             }
         }
     }
+}
+
+@Composable
+private fun EditarSnippetDialog(
+    snippet: SnippetEntity,
+    onDismiss: () -> Unit,
+    onGuardar: (String, String) -> Unit
+) {
+    var titulo by remember(snippet.id) { mutableStateOf(snippet.titulo) }
+    var contenido by remember(snippet.id) { mutableStateOf(snippet.contenido) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar snippet") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = titulo,
+                    onValueChange = { titulo = it },
+                    label = { Text("Nombre") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = contenido,
+                    onValueChange = { contenido = it },
+                    label = { Text("Snippet") },
+                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    minLines = 3
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onGuardar(titulo, contenido) },
+                enabled = titulo.isNotBlank() && contenido.isNotBlank()
+            ) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancelar") }
+        }
+    )
 }
 
 @Preview(showBackground = true)
@@ -198,8 +290,9 @@ private fun CategoriaDetailScreenPreview() {
                     )
                 ),
                 onBack = {},
-                onSnippetClick = {},
                 onToggleFavorito = {},
+                onEditar = { _, _, _ -> },
+                onEliminar = {},
                 onCopiar = {}
             )
         }
