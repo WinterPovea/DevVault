@@ -1,11 +1,15 @@
 package com.devvault.app.presentation.add_snippet
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,16 +21,22 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.devvault.app.data.local.entity.CategoriaEntity
+import kotlinx.coroutines.delay
 
 @Composable
 fun AddSnippetScreen(
     onNavigateBack: () -> Unit,
+    onNavigateToCategorias: () -> Unit = {},
     viewModel: AddSnippetViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // Regresar automáticamente después de que el usuario vea la animación de éxito
     LaunchedEffect(uiState.isSaved) {
-        if (uiState.isSaved) onNavigateBack()
+        if (uiState.isSaved) {
+            delay(1000) // 1 segundo de pausa para disfrutar el botón verde
+            onNavigateBack()
+        }
     }
 
     AddSnippetContent(
@@ -36,7 +46,8 @@ fun AddSnippetScreen(
         onCategoriaSelected = viewModel::onCategoriaSelected,
         toggleDropdown = viewModel::toggleDropdown,
         onSave = viewModel::saveSnippet,
-        onNavigateBack = onNavigateBack
+        onNavigateBack = onNavigateBack,
+        onAddCategoryClick = onNavigateToCategorias
     )
 }
 
@@ -49,11 +60,20 @@ fun AddSnippetContent(
     onCategoriaSelected: (Long) -> Unit,
     toggleDropdown: (Boolean) -> Unit,
     onSave: () -> Unit,
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onAddCategoryClick: () -> Unit
 ) {
     val backgroundColor = Color(0xFF1B1E26)
     val cardColor = Color(0xFF252A34)
     val accentCyan = Color(0xFF00E5FF)
+    val successGreen = Color(0xFF00E676) // Verde brillante para el éxito
+
+    // Animación de color para el botón de guardado
+    val saveButtonColor by animateColorAsState(
+        targetValue = if (uiState.isSaved) successGreen else accentCyan,
+        animationSpec = tween(durationMillis = 300),
+        label = "buttonColor"
+    )
 
     Scaffold(
         topBar = {
@@ -104,8 +124,11 @@ fun AddSnippetContent(
                     onExpandedChange = toggleDropdown,
                     modifier = Modifier.weight(1f)
                 ) {
+                    val selectedCategoryName = uiState.categorias.find { it.id == uiState.selectedCategoriaId }?.nombre
+                        ?: if (uiState.categorias.isEmpty()) "No hay categorías (Crea una)" else "Elegir"
+
                     OutlinedTextField(
-                        value = uiState.categorias.find { it.id == uiState.selectedCategoriaId }?.nombre ?: "Elegir",
+                        value = selectedCategoryName,
                         onValueChange = {},
                         readOnly = true,
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = uiState.expandedDropdown) },
@@ -124,17 +147,24 @@ fun AddSnippetContent(
                         expanded = uiState.expandedDropdown,
                         onDismissRequest = { toggleDropdown(false) }
                     ) {
-                        uiState.categorias.forEach { categoria ->
+                        if (uiState.categorias.isEmpty()) {
                             DropdownMenuItem(
-                                text = { Text(categoria.nombre) },
-                                onClick = { onCategoriaSelected(categoria.id) }
+                                text = { Text("Sin categorías registradas") },
+                                onClick = { toggleDropdown(false) }
                             )
+                        } else {
+                            uiState.categorias.forEach { categoria ->
+                                DropdownMenuItem(
+                                    text = { Text(categoria.nombre) },
+                                    onClick = { onCategoriaSelected(categoria.id) }
+                                )
+                            }
                         }
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
                 IconButton(
-                    onClick = { /* Acción para agregar categoría rápida */ },
+                    onClick = onAddCategoryClick,
                     modifier = Modifier
                         .background(cardColor, RoundedCornerShape(12.dp))
                         .size(56.dp)
@@ -142,7 +172,7 @@ fun AddSnippetContent(
                     Icon(
                         Icons.Default.Add,
                         contentDescription = "Añadir Categoría",
-                        tint = Color.Gray
+                        tint = accentCyan
                     )
                 }
             }
@@ -166,40 +196,29 @@ fun AddSnippetContent(
                 )
 
                 Button(
-                    onClick = onSave,
+                    onClick = {
+                        // Solo permite guardar si no se está guardando ya
+                        if (!uiState.isSaved) onSave()
+                    },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(16.dp),
+                        .padding(16.dp)
+                        .height(48.dp)
+                        .animateContentSize(), // Anima el cambio de tamaño del contenido suavemente
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = accentCyan,
+                        containerColor = saveButtonColor,
                         contentColor = Color.Black
                     )
                 ) {
-                    Text("Save", fontWeight = FontWeight.Bold)
+                    // Si se guardó, mostramos un Check; si no, el texto "Save"
+                    if (uiState.isSaved) {
+                        Icon(Icons.Default.Check, contentDescription = "Éxito")
+                    } else {
+                        Text("Save", fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true, name = "Agregar Snippet Screen")
-@Composable
-fun AddSnippetPreview() {
-    MaterialTheme {
-        AddSnippetContent(
-            uiState = AddSnippetUiState(
-                nombre = "Levantar Contenedor",
-                contenido = "docker-compose up -d",
-                categorias = listOf(CategoriaEntity(id = 1L, nombre = "Docker", color = 0)),
-                selectedCategoriaId = 1L
-            ),
-            onNombreChange = {},
-            onContenidoChange = {},
-            onCategoriaSelected = {},
-            toggleDropdown = {},
-            onSave = {},
-            onNavigateBack = {}
-        )
     }
 }

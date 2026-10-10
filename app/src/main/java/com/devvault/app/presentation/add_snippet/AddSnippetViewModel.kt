@@ -22,7 +22,6 @@ class AddSnippetViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            // Usamos el nombre real definido por tu compañero en el repositorio
             repository.obtenerCategorias().collect { categorias ->
                 _uiState.update { it.copy(categorias = categorias) }
             }
@@ -48,8 +47,9 @@ class AddSnippetViewModel @Inject constructor(
                     lenguaje = "Kotlin / Bash",
                     fechaCreacion = System.currentTimeMillis()
                 )
-                // Usamos el nombre real de inserción definido en el repositorio
                 repository.insertarSnippet(newSnippet)
+
+                // Disparamos la animación de éxito del botón
                 _uiState.update { it.copy(isSaved = true) }
             }
         }
