@@ -12,6 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.devvault.app.ui.favoritos.FavoritosRoute //fav
 
 @Composable
 fun DevVaultNavHost(
@@ -36,7 +37,7 @@ fun DevVaultNavHost(
         }
 
         composable<DevVaultRoute.Favoritos> {
-            PlaceholderScreen("Favoritos")
+            FavoritosRoute() //Fav
         }
 
         composable<DevVaultRoute.CategoriaDetail> { backStackEntry ->
