@@ -98,7 +98,7 @@ fun FavoritoSnippetCard(
                 colors = ButtonDefaults.outlinedButtonColors(
                     contentColor = cyanAccent
                 ),
-                shape = RoundedCornerShape(20.dp) // Botón redondeado
+                shape = RoundedCornerShape(20.dp)
             ) {
                 Text(text = "Copiar", fontWeight = FontWeight.SemiBold)
             }
