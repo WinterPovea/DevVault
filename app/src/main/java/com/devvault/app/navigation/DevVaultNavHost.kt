@@ -37,7 +37,9 @@ fun DevVaultNavHost(
         }
 
         composable<DevVaultRoute.Favoritos> {
-            FavoritosRoute() //Fav
+            FavoritosRoute(
+                onBackClick = { navController.popBackStack() } // fav retroceder
+            )
         }
 
         composable<DevVaultRoute.CategoriaDetail> { backStackEntry ->
