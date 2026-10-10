@@ -38,7 +38,16 @@ fun DevVaultNavHost(
 
         composable<DevVaultRoute.Agregar> {
             AddSnippetScreen(
-                onNavigateBack = { navController.popBackStack() }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCategorias = {
+                    navController.navigate(DevVaultRoute.Categorias) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
             )
         }
 
