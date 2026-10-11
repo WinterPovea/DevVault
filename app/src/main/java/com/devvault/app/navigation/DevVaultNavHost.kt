@@ -12,6 +12,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
+import com.devvault.app.ui.home.HomeRoute
 
 @Composable
 fun DevVaultNavHost(
@@ -24,7 +25,12 @@ fun DevVaultNavHost(
         modifier = modifier
     ) {
         composable<DevVaultRoute.Home> {
-            PlaceholderScreen("Home")
+            HomeRoute(
+                onSnippetClick = { snippetId ->
+                    // Esto le dice a la app: "Cuando toquen un snippet, ve a la pantalla de detalles"
+                    navController.navigate(DevVaultRoute.SnippetDetail(snippetId))
+                }
+            )
         }
 
         composable<DevVaultRoute.Categorias> {
