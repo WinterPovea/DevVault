@@ -104,7 +104,7 @@ object DatabaseSeeder {
         // ----------------------------------------------------------------
         // 5. Docker
         // ----------------------------------------------------------------
-        SnippetSeed(5, "Construir e etiquetar imagen", "docker build -t app-devvault:latest .", "bash", true),
+        SnippetSeed(5, "Construir y etiquetar imagen", "docker build -t app-devvault:latest .", "bash", true),
         SnippetSeed(5, "Levantar servicios en segundo plano", "docker compose up -d", "bash", false),
         SnippetSeed(5, "Limpiar recursos huérfanos y volúmenes sin uso", "docker system prune -a --volumes", "bash", false),
 
