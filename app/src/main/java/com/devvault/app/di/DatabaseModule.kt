@@ -11,6 +11,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
+import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.devvault.app.data.local.database.DatabaseSeeder
 
 @Module
 @InstallIn(SingletonComponent::class)
