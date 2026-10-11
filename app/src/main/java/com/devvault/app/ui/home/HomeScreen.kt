@@ -30,9 +30,10 @@ import com.devvault.app.ui.home.components.SnippetListItem
 import com.devvault.app.ui.theme.DevVaultTheme
 import com.devvault.app.ui.theme.TextSecondary
 
+
 @Composable
 fun HomeRoute(
-    onSnippetClick: (Long) -> Unit,
+    onCategoriaClick: (Long) -> Unit,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -40,10 +41,11 @@ fun HomeRoute(
     HomeScreen(
         uiState = uiState,
         onEvent = { event ->
-            // Interceptamos el click de navegación para rutearlo hacia el NavHost,
-            // los demás eventos (escribir, borrar) van directos al ViewModel.
             if (event is HomeEvent.OnSnippetClick) {
-                onSnippetClick(event.snippetId)
+                val snippet = uiState.snippets.find { it.id == event.snippetId }
+                snippet?.let {
+                    onCategoriaClick(it.categoriaId)
+                }
             } else {
                 viewModel.onEvent(event)
             }
