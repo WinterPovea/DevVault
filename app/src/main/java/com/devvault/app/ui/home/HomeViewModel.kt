@@ -3,7 +3,6 @@ package com.devvault.app.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.devvault.app.data.repository.DevVaultRepository
-import com.devvault.app.util.DebugDataLoader
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -13,38 +12,31 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val repository: DevVaultRepository,
-    private val debugDataLoader: DebugDataLoader
+    private val repository: DevVaultRepository
+    // ❌ Eliminamos DebugDataLoader. La BD ya se siembra sola desde el DatabaseModule.
 ) : ViewModel() {
-
-    init {
-        viewModelScope.launch {
-            debugDataLoader.loadIfEmpty()
-        }
-    }
 
     private val _searchQuery = MutableStateFlow("")
 
     val uiState: StateFlow<HomeUiState> = combine(
-        // 1. El texto de la búsqueda se actualiza INMEDIATAMENTE para que puedas escribir fluido
+        // 1. El texto de la búsqueda se actualiza INMEDIATAMENTE para la UI
         _searchQuery,
-        // 2. La consulta a la base de datos se desacopla con el debounce de 300ms
+        // 2. La consulta a la BD reacciona al texto de búsqueda
         _searchQuery
             .debounce(300.milliseconds)
             .flatMapLatest { query ->
                 if (query.trim().length >= 2) {
                     repository.buscarSnippets(query)
                 } else {
-                    repository.obtenerSnippets().map { it.take(10) }
+                    // Recolecta todos los recientes directamente desde la BD (Flow)
+                    repository.obtenerSnippets()
                 }
             }
     ) { currentQuery, snippetsResult ->
@@ -56,7 +48,7 @@ class HomeViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000L),
-        initialValue = HomeUiState(isLoading = true)
+        initialValue = HomeUiState(isLoading = true) // Estado inicial de carga
     )
 
     fun onEvent(event: HomeEvent) {
@@ -68,7 +60,7 @@ class HomeViewModel @Inject constructor(
                 _searchQuery.value = ""
             }
             is HomeEvent.OnSnippetClick -> {
-                // Manejado por la navegación
+                // El clic es manejado limpiamente a nivel de UI / Navegación
             }
         }
     }
