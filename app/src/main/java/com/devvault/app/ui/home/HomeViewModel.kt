@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
+import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
@@ -36,7 +37,7 @@ class HomeViewModel @Inject constructor(
                     repository.buscarSnippets(query)
                 } else {
                     // Recolecta todos los recientes directamente desde la BD (Flow)
-                    repository.obtenerSnippets()
+                    repository.obtenerSnippets().map { it.take(5) }
                 }
             }
     ) { currentQuery, snippetsResult ->
