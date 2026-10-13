@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.devvault.app.ui.home.HomeRoute
+import com.devvault.app.presentation.add_snippet.AddSnippetScreen
 import com.devvault.app.presentation.categoria.CategoriaDetailRoute
 import com.devvault.app.presentation.categorias.CategoriasRoute
 import com.devvault.app.ui.favoritos.FavoritosRoute
@@ -29,22 +30,29 @@ fun DevVaultNavHost(
     ) {
         composable<DevVaultRoute.Home> {
             HomeRoute(
-                onCategoriaClick = { categoryId ->
-                    navController.navigate(DevVaultRoute.CategoriaDetail(categoryId))
-                }
+                onCategoriaClick = { navController.navigate(DevVaultRoute.CategoriaDetail(it)) }
             )
         }
 
         composable<DevVaultRoute.Categorias> {
             CategoriasRoute(
-                onCategoriaClick = { categoriaId ->
-                    navController.navigate(DevVaultRoute.CategoriaDetail(categoriaId))
-                }
+                onCategoriaClick = { navController.navigate(DevVaultRoute.CategoriaDetail(it)) }
             )
         }
 
         composable<DevVaultRoute.Agregar> {
-            PlaceholderScreen("Agregar snippet")
+            AddSnippetScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCategorias = {
+                    navController.navigate(DevVaultRoute.Categorias) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
         }
 
         composable<DevVaultRoute.Favoritos> {
