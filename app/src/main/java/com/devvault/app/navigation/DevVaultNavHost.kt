@@ -15,6 +15,7 @@ import androidx.navigation.toRoute
 import com.devvault.app.ui.home.HomeRoute
 import com.devvault.app.presentation.categoria.CategoriaDetailRoute
 import com.devvault.app.presentation.categorias.CategoriasRoute
+import com.devvault.app.ui.favoritos.FavoritosRoute
 
 @Composable
 fun DevVaultNavHost(
@@ -26,17 +27,14 @@ fun DevVaultNavHost(
         startDestination = DevVaultRoute.Home,
         modifier = modifier
     ) {
-        // Tu pantalla Home real conectada correctamente
         composable<DevVaultRoute.Home> {
             HomeRoute(
                 onCategoriaClick = { categoryId ->
-                    // Al hacer clic en un snippet, navegamos al detalle de su categoría correspondiente
                     navController.navigate(DevVaultRoute.CategoriaDetail(categoryId))
                 }
             )
         }
 
-        // Pantalla de categorías de tu compañero
         composable<DevVaultRoute.Categorias> {
             CategoriasRoute(
                 onCategoriaClick = { categoriaId ->
@@ -50,10 +48,11 @@ fun DevVaultNavHost(
         }
 
         composable<DevVaultRoute.Favoritos> {
-            PlaceholderScreen("Favoritos")
+            FavoritosRoute(
+                onBackClick = { navController.popBackStack() }
+            )
         }
 
-        // Detalle de categoría real de tu compañero
         composable<DevVaultRoute.CategoriaDetail> {
             CategoriaDetailRoute(
                 onBack = { navController.popBackStack() }
