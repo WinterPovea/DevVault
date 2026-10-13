@@ -27,8 +27,9 @@ fun DevVaultNavHost(
         startDestination = DevVaultRoute.Home,
         modifier = modifier
     ) {
+        // AQUÍ REEMPLAZAMOS EL PLACEHOLDER POR LA PANTALLA REAL DE HOME
         composable<DevVaultRoute.Home> {
-            PlaceholderScreen("Home")
+            HomeRoute(onCategoriaClick = { navController.navigate(DevVaultRoute.CategoriaDetail(it)) })
         }
 
         composable<DevVaultRoute.Categorias> {
@@ -52,6 +53,7 @@ fun DevVaultNavHost(
             )
         }
 
+        // Si tu compañero ya hizo Favoritos, aquí deberás cambiar PlaceholderScreen por el nombre de su pantalla (ej. FavoritosRoute())
         composable<DevVaultRoute.Favoritos> {
             PlaceholderScreen("Favoritos")
         }
