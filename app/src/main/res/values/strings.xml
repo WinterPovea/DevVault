@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">DevVault</string>
+
+    <!-- Textos de la pantalla de Favoritos -->
+    <string name="favoritos_titulo">Favoritos</string>
+    <string name="favoritos_sin_comandos">Aún no tienes comandos favoritos.</string>
+    <string name="favoritos_copiar">Copiar</string>
+    <string name="favoritos_mensaje_copiado">Código copiado al portapapeles</string>
+
+    <!-- Descripciones para accesibilidad -->
+    <string name="favoritos_cd_volver">Volver</string>
+    <string name="favoritos_cd_alternar">Alternar favorito</string>
 </resources>
