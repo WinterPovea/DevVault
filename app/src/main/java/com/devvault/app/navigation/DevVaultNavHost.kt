@@ -13,6 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.devvault.app.ui.home.HomeRoute
+import com.devvault.app.presentation.add_snippet.AddSnippetScreen
 import com.devvault.app.presentation.categoria.CategoriaDetailRoute
 import com.devvault.app.presentation.categorias.CategoriasRoute
 
@@ -26,34 +27,35 @@ fun DevVaultNavHost(
         startDestination = DevVaultRoute.Home,
         modifier = modifier
     ) {
-        // Tu pantalla Home real conectada correctamente
         composable<DevVaultRoute.Home> {
-            HomeRoute(
-                onCategoriaClick = { categoryId ->
-                    // Al hacer clic en un snippet, navegamos al detalle de su categoría correspondiente
-                    navController.navigate(DevVaultRoute.CategoriaDetail(categoryId))
-                }
-            )
+            PlaceholderScreen("Home")
         }
 
-        // Pantalla de categorías de tu compañero
         composable<DevVaultRoute.Categorias> {
             CategoriasRoute(
-                onCategoriaClick = { categoriaId ->
-                    navController.navigate(DevVaultRoute.CategoriaDetail(categoriaId))
-                }
+                onCategoriaClick = { navController.navigate(DevVaultRoute.CategoriaDetail(it)) }
             )
         }
 
         composable<DevVaultRoute.Agregar> {
-            PlaceholderScreen("Agregar snippet")
+            AddSnippetScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToCategorias = {
+                    navController.navigate(DevVaultRoute.Categorias) {
+                        popUpTo(navController.graph.startDestinationId) {
+                            saveState = true
+                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+            )
         }
 
         composable<DevVaultRoute.Favoritos> {
             PlaceholderScreen("Favoritos")
         }
 
-        // Detalle de categoría real de tu compañero
         composable<DevVaultRoute.CategoriaDetail> {
             CategoriaDetailRoute(
                 onBack = { navController.popBackStack() }
