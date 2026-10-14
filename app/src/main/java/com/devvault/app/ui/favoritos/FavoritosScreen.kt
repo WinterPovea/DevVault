@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.home.components.SearchBar
 
 @Composable
 fun FavoritosRoute(
@@ -30,10 +31,13 @@ fun FavoritosRoute(
     onBackClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     FavoritosScreen(
         uiState = uiState,
+        searchQuery = searchQuery,
+        onSearchQueryChange = viewModel::updateSearchQuery,
         onCopyClick = { textoCodigo ->
             val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
             val clip = ClipData.newPlainText("Código", textoCodigo)
@@ -52,12 +56,13 @@ fun FavoritosRoute(
 @Composable
 fun FavoritosScreen(
     uiState: FavoritosUiState,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
     onCopyClick: (String) -> Unit,
     onFavoriteClick: (SnippetEntity) -> Unit,
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    // Colores del diseño
     val backgroundColor = Color(0xFF0B101A)
     val cyanAccent = Color(0xFF00E5FF)
 
@@ -82,37 +87,53 @@ fun FavoritosScreen(
         },
         modifier = modifier
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            when (uiState) {
-                is FavoritosUiState.Loading -> {
-                    CircularProgressIndicator(
-                        color = cyanAccent,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-                is FavoritosUiState.Empty -> {
-                    Text(
-                        text = "Aún no tienes comandos favoritos.",
-                        color = Color(0xFFA0AABF),
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-                is FavoritosUiState.Success -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 80.dp)
-                    ) {
-                        items(items = uiState.favoritos, key = { it.id }) { snippet ->
-                            FavoritoSnippetCard(
-                                snippet = snippet,
-                                onCopyClick = onCopyClick,
-                                onFavoriteClick = { onFavoriteClick(snippet) }
-                            )
+            // Buscador fijo en la parte superior
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = onSearchQueryChange,
+                onClearClick = { onSearchQueryChange("") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            ) {
+                when (uiState) {
+                    is FavoritosUiState.Loading -> {
+                        CircularProgressIndicator(
+                            color = cyanAccent,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    is FavoritosUiState.Empty -> {
+                        Text(
+                            text = if (searchQuery.isEmpty()) "Aún no tienes comandos favoritos." else "No se encontraron resultados.",
+                            color = Color(0xFFA0AABF),
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                    is FavoritosUiState.Success -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(bottom = 80.dp)
+                        ) {
+                            items(items = uiState.favoritos, key = { it.id }) { snippet ->
+                                FavoritoSnippetCard(
+                                    snippet = snippet,
+                                    onCopyClick = onCopyClick,
+                                    onFavoriteClick = { onFavoriteClick(snippet) }
+                                )
+                            }
                         }
                     }
                 }
@@ -136,18 +157,11 @@ private fun FavoritosScreenPreview() {
                         lenguaje = "Crear ENV container",
                         esFavorito = true,
                         fechaCreacion = System.currentTimeMillis()
-                    ),
-                    SnippetEntity(
-                        id = 2,
-                        categoriaId = 1,
-                        titulo = "Borrar DB",
-                        contenido = "docker rm -f db_service",
-                        lenguaje = "Borrar DB servicio",
-                        esFavorito = true,
-                        fechaCreacion = System.currentTimeMillis()
                     )
                 )
             ),
+            searchQuery = "",
+            onSearchQueryChange = {},
             onCopyClick = {},
             onFavoriteClick = {}
         )

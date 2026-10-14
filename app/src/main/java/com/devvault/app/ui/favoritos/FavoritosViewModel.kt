@@ -5,9 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -23,19 +24,36 @@ class FavoritosViewModel @Inject constructor(
     private val repository: DevVaultRepository
 ) : ViewModel() {
 
-    val uiState: StateFlow<FavoritosUiState> = repository.obtenerSnippetsFavoritos()
-        .map { favoritos ->
-            if (favoritos.isEmpty()) {
-                FavoritosUiState.Empty
-            } else {
-                FavoritosUiState.Success(favoritos)
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery
+
+    val uiState: StateFlow<FavoritosUiState> = combine(
+        repository.obtenerSnippetsFavoritos(),
+        _searchQuery
+    ) { favoritos, query ->
+        val filtrados = if (query.isBlank()) {
+            favoritos
+        } else {
+            favoritos.filter {
+                it.titulo.contains(query, ignoreCase = true) ||
+                        it.contenido.contains(query, ignoreCase = true)
             }
         }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = FavoritosUiState.Loading
-        )
+
+        if (filtrados.isEmpty()) {
+            FavoritosUiState.Empty
+        } else {
+            FavoritosUiState.Success(filtrados)
+        }
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = FavoritosUiState.Loading
+    )
+
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
 
     fun alternarFavorito(snippet: SnippetEntity) {
         viewModelScope.launch {

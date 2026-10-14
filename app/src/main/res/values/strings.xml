@@ -10,4 +10,5 @@
     <!-- Descripciones para accesibilidad -->
     <string name="favoritos_cd_volver">Volver</string>
     <string name="favoritos_cd_alternar">Alternar favorito</string>
+    <string name="favoritos_buscar">Buscar en favoritos...</string>
 </resources>
