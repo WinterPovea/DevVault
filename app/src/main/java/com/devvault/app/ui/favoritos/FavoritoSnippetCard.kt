@@ -10,13 +10,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.theme.CodeBackground
+import com.devvault.app.ui.theme.CodeText
+import com.devvault.app.ui.theme.DevVaultTheme
+import com.devvault.app.ui.theme.StarFavorite
 
 @Composable
 fun FavoritoSnippetCard(
@@ -25,19 +28,15 @@ fun FavoritoSnippetCard(
     onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val cardBackgroundColor = Color(0xFF1E2336)
-    val codeBackgroundColor = Color(0xFF0F141E)
-    val cyanAccent = Color(0xFF00E5FF)
-    val textPrimary = Color.White
-    val textSecondary = Color(0xFFA0AABF)
+    val colors = MaterialTheme.colorScheme
 
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
-        border = BorderStroke(1.dp, Color.White.copy(alpha = 0.05f))
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        border = BorderStroke(1.dp, colors.outline)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)
@@ -52,12 +51,12 @@ fun FavoritoSnippetCard(
                         text = snippet.titulo,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
-                        color = textPrimary
+                        color = colors.onSurface
                     )
                     Text(
                         text = snippet.lenguaje ?: "",
                         fontSize = 14.sp,
-                        color = textSecondary
+                        color = colors.onSurfaceVariant
                     )
                 }
 
@@ -68,7 +67,7 @@ fun FavoritoSnippetCard(
                     Icon(
                         imageVector = Icons.Filled.Star,
                         contentDescription = "Alternar favorito",
-                        tint = if (snippet.esFavorito) Color(0xFFFFC107) else textSecondary.copy(alpha = 0.3f)
+                        tint = if (snippet.esFavorito) StarFavorite else colors.onSurfaceVariant.copy(alpha = 0.3f)
                     )
                 }
             }
@@ -78,12 +77,12 @@ fun FavoritoSnippetCard(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(codeBackgroundColor, RoundedCornerShape(8.dp))
+                    .background(CodeBackground, RoundedCornerShape(8.dp))
                     .padding(12.dp)
             ) {
                 Text(
                     text = snippet.contenido,
-                    color = cyanAccent,
+                    color = CodeText,
                     fontFamily = FontFamily.Monospace,
                     fontSize = 14.sp
                 )
@@ -94,9 +93,9 @@ fun FavoritoSnippetCard(
             OutlinedButton(
                 onClick = { onCopyClick(snippet.contenido) },
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-                border = BorderStroke(1.dp, cyanAccent),
+                border = BorderStroke(1.dp, colors.primary),
                 colors = ButtonDefaults.outlinedButtonColors(
-                    contentColor = cyanAccent
+                    contentColor = colors.primary
                 ),
                 shape = RoundedCornerShape(20.dp)
             ) {
@@ -106,10 +105,10 @@ fun FavoritoSnippetCard(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFF0B101A)
+@Preview(showBackground = true)
 @Composable
 private fun FavoritoSnippetCardPreview() {
-    MaterialTheme {
+    DevVaultTheme {
         FavoritoSnippetCard(
             snippet = SnippetEntity(
                 id = 1,
@@ -122,7 +121,9 @@ private fun FavoritoSnippetCardPreview() {
             ),
             onCopyClick = {},
             onFavoriteClick = {},
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
         )
     }
 }

@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -23,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.ui.home.components.SearchBar
+import com.devvault.app.ui.theme.DevVaultTheme
 
 @Composable
 fun FavoritosRoute(
@@ -63,25 +63,24 @@ fun FavoritosScreen(
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = Color(0xFF0B101A)
-    val cyanAccent = Color(0xFF00E5FF)
+    val colors = MaterialTheme.colorScheme
 
     Scaffold(
-        containerColor = backgroundColor,
+        containerColor = colors.background,
         topBar = {
             TopAppBar(
-                title = { Text(text = "Favoritos", fontWeight = FontWeight.Bold, color = Color.White) },
+                title = { Text(text = "Favoritos", fontWeight = FontWeight.Bold, color = colors.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver",
-                            tint = cyanAccent
+                            tint = colors.primary
                         )
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = backgroundColor
+                    containerColor = colors.background
                 )
             )
         },
@@ -93,7 +92,6 @@ fun FavoritosScreen(
                 .padding(paddingValues)
                 .padding(horizontal = 16.dp)
         ) {
-            // Buscador fijo en la parte superior
             SearchBar(
                 query = searchQuery,
                 onQueryChange = onSearchQueryChange,
@@ -111,14 +109,14 @@ fun FavoritosScreen(
                 when (uiState) {
                     is FavoritosUiState.Loading -> {
                         CircularProgressIndicator(
-                            color = cyanAccent,
+                            color = colors.primary,
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
                     is FavoritosUiState.Empty -> {
                         Text(
                             text = if (searchQuery.isEmpty()) "Aún no tienes comandos favoritos." else "No se encontraron resultados.",
-                            color = Color(0xFFA0AABF),
+                            color = colors.onSurfaceVariant,
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
@@ -145,7 +143,7 @@ fun FavoritosScreen(
 @Preview(showSystemUi = true)
 @Composable
 private fun FavoritosScreenPreview() {
-    MaterialTheme {
+    DevVaultTheme {
         FavoritosScreen(
             uiState = FavoritosUiState.Success(
                 favoritos = listOf(
