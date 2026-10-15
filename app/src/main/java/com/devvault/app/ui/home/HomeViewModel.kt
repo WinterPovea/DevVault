@@ -21,20 +21,17 @@ import kotlinx.coroutines.flow.map
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: DevVaultRepository
-    // ❌ Eliminamos DebugDataLoader. La BD ya se siembra sola desde el DatabaseModule.
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
 
     val uiState: StateFlow<HomeUiState> = combine(
-        // 1. El texto de la búsqueda se actualiza INMEDIATAMENTE para la UI
         _searchQuery,
-        // 2. La consulta a la BD reacciona al texto de búsqueda
         _searchQuery
             .debounce(300.milliseconds)
             .flatMapLatest { query ->
-                if (query.trim().length >= 2) {
-                    repository.buscarSnippets(query)
+                if (query.trim().isNotEmpty()) {
+                    repository.buscarSnippets(query.trim())
                 } else {
                     // Recolecta todos los recientes directamente desde la BD (Flow)
                     repository.obtenerSnippets().map { it.take(5) }

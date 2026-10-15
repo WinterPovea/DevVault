@@ -25,9 +25,12 @@ interface SnippetDao {
     suspend fun obtenerPorId(id: Long): SnippetEntity?
 
     @Query("""
-        SELECT * FROM snippets 
-        WHERE titulo LIKE '%' || :query || '%' 
-           OR contenido LIKE '%' || :query || '%'
+        SELECT s.* FROM snippets s
+        LEFT JOIN categorias c ON s.categoriaId = c.id
+        WHERE s.titulo LIKE '%' || :query || '%' 
+           OR s.contenido LIKE '%' || :query || '%'
+           OR c.nombre LIKE '%' || :query || '%'
+           OR s.lenguaje LIKE '%' || :query || '%'
     """)
     fun buscar(query: String): Flow<List<SnippetEntity>>
 
