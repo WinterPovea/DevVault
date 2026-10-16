@@ -1,4 +1,4 @@
-package com.devvault.app.presentation.categorias
+package com.devvault.app.ui.categorias
 
 data class CategoriaConConteo(
     val id: Long,

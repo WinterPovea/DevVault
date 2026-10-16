@@ -1,4 +1,4 @@
-package com.devvault.app.presentation.categorias
+package com.devvault.app.ui.categorias
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

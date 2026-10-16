@@ -1,4 +1,4 @@
-package com.devvault.app.presentation.categoria
+package com.devvault.app.ui.categoria
 
 import com.devvault.app.data.local.entity.SnippetEntity
 

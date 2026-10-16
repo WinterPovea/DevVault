@@ -1,4 +1,4 @@
-package com.devvault.app.presentation.categorias
+package com.devvault.app.ui.categorias
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

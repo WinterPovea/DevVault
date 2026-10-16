@@ -12,12 +12,11 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
-import com.devvault.app.ui.home.HomeRoute
 import com.devvault.app.presentation.add_snippet.AddSnippetScreen
-import com.devvault.app.presentation.categoria.CategoriaDetailRoute
-import com.devvault.app.presentation.categorias.CategoriasRoute
+import com.devvault.app.ui.categoria.CategoriaDetailRoute
+import com.devvault.app.ui.categorias.CategoriasRoute
 import com.devvault.app.ui.favoritos.FavoritosRoute
-
+import com.devvault.app.ui.home.HomeRoute
 @Composable
 fun DevVaultNavHost(
     navController: NavHostController,

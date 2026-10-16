@@ -1,4 +1,4 @@
-package com.devvault.app.presentation.categoria
+package com.devvault.app.ui.categoria
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
