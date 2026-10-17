@@ -1,4 +1,4 @@
-package com.devvault.app.presentation.categoria
+package com.devvault.app.ui.categoria
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -42,7 +42,14 @@ class CategoriaDetailViewModel @Inject constructor(
 
     fun onToggleFavorito(snippet: SnippetEntity) {
         viewModelScope.launch {
-            repository.actualizarSnippet(snippet.copy(esFavorito = !snippet.esFavorito))
+            val nuevoEstado = !snippet.esFavorito
+            val nuevaFecha = if (nuevoEstado) System.currentTimeMillis() else null
+            repository.actualizarSnippet(
+                snippet.copy(
+                    esFavorito = nuevoEstado,
+                    fechaFavorito = nuevaFecha
+                )
+            )
         }
     }
 

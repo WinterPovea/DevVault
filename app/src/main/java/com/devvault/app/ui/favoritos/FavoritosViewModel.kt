@@ -31,6 +31,7 @@ class FavoritosViewModel @Inject constructor(
         repository.obtenerSnippetsFavoritos(),
         _searchQuery
     ) { favoritos, query ->
+
         val filtrados = if (query.isBlank()) {
             favoritos
         } else {
@@ -40,10 +41,12 @@ class FavoritosViewModel @Inject constructor(
             }
         }
 
-        if (filtrados.isEmpty()) {
+        val ordenados = filtrados.sortedByDescending { it.fechaFavorito ?: 0L }
+
+        if (ordenados.isEmpty()) {
             FavoritosUiState.Empty
         } else {
-            FavoritosUiState.Success(filtrados)
+            FavoritosUiState.Success(ordenados)
         }
     }.stateIn(
         scope = viewModelScope,
@@ -57,7 +60,15 @@ class FavoritosViewModel @Inject constructor(
 
     fun alternarFavorito(snippet: SnippetEntity) {
         viewModelScope.launch {
-            repository.actualizarSnippet(snippet.copy(esFavorito = !snippet.esFavorito))
+            val nuevoEstadoFavorito = !snippet.esFavorito
+            val tiempoActual = if (nuevoEstadoFavorito) System.currentTimeMillis() else null
+
+            repository.actualizarSnippet(
+                snippet.copy(
+                    esFavorito = nuevoEstadoFavorito,
+                    fechaFavorito = tiempoActual
+                )
+            )
         }
     }
 }

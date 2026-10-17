@@ -12,7 +12,7 @@ import com.devvault.app.data.local.entity.SnippetEntity
         CategoriaEntity::class,
         SnippetEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class DevVaultDatabase : RoomDatabase() {

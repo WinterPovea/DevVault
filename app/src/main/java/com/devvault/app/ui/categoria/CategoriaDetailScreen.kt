@@ -1,29 +1,21 @@
-package com.devvault.app.presentation.categoria
+package com.devvault.app.ui.categoria
 
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -37,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -46,10 +37,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.components.SnippetCard
 import com.devvault.app.ui.theme.DevVaultTheme
 import com.devvault.app.util.copiarAlPortapapeles
-
-private val ColorEstrella = Color(0xFFF5C94B)
 
 @Composable
 fun CategoriaDetailRoute(
@@ -168,67 +158,6 @@ fun CategoriaDetailScreen(
                         }
                     }
                 }
-        }
-    }
-}
-
-@Composable
-private fun SnippetCard(
-    snippet: SnippetEntity,
-    onToggleFavorito: () -> Unit,
-    onCopiar: () -> Unit,
-    onEditar: () -> Unit,
-    onEliminar: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
-        )
-    ) {
-        Column(Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    snippet.titulo,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f)
-                )
-                IconButton(onClick = onToggleFavorito) {
-                    Icon(
-                        imageVector = Icons.Filled.Star,
-                        contentDescription = "Favorito",
-                        tint = if (snippet.esFavorito) ColorEstrella else MaterialTheme.colorScheme.outlineVariant
-                    )
-                }
-            }
-            Surface(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerLowest
-            ) {
-                Text(
-                    snippet.contenido,
-                    modifier = Modifier.padding(8.dp),
-                    fontFamily = FontFamily.Monospace,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.tertiary
-                )
-            }
-            Row(
-                modifier = Modifier.padding(top = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedButton(onClick = onCopiar, shape = RoundedCornerShape(8.dp)) {
-                    Text("⧉ Copiar")
-                }
-                TextButton(onClick = onEditar) { Text("Editar") }
-                TextButton(onClick = onEliminar) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
-                }
-            }
         }
     }
 }
