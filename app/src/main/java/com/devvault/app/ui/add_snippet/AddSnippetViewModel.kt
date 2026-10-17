@@ -1,4 +1,4 @@
-package com.devvault.app.presentation.add_snippet
+package com.devvault.app.ui.add_snippet
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
