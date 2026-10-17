@@ -195,11 +195,13 @@ fun AddSnippetContent(
                     )
                 )
 
+                val isFormValid = uiState.nombre.isNotBlank() && uiState.contenido.isNotBlank() && uiState.selectedCategoriaId != null
                 Button(
                     onClick = {
-                        // Solo permite guardar si no se está guardando ya
-                        if (!uiState.isSaved) onSave()
+                        // Solo permite guardar si no se está guardando ya y el formulario es válido
+                        if (!uiState.isSaved && isFormValid) onSave()
                     },
+                    enabled = isFormValid && !uiState.isSaved,
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
                         .padding(16.dp)
@@ -208,7 +210,9 @@ fun AddSnippetContent(
                     shape = RoundedCornerShape(20.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = saveButtonColor,
-                        contentColor = Color.Black
+                        contentColor = Color.Black,
+                        disabledContainerColor = cardColor.copy(alpha = 0.6f),
+                        disabledContentColor = Color.Gray
                     )
                 ) {
                     // Si se guardó, mostramos un Check; si no, el texto "Save"

@@ -23,7 +23,12 @@ class AddSnippetViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             repository.obtenerCategorias().collect { categorias ->
-                _uiState.update { it.copy(categorias = categorias) }
+                _uiState.update { current ->
+                    current.copy(
+                        categorias = categorias,
+                        selectedCategoriaId = current.selectedCategoriaId ?: categorias.firstOrNull()?.id
+                    )
+                }
             }
         }
     }

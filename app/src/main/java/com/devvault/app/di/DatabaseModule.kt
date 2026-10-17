@@ -34,6 +34,19 @@ object DatabaseModule {
                     super.onCreate(db)
                     DatabaseSeeder.poblar(db)
                 }
+
+                override fun onOpen(db: SupportSQLiteDatabase) {
+                    super.onOpen(db)
+                    val cursor = db.query("SELECT COUNT(*) FROM categorias")
+                    var count = 0
+                    if (cursor.moveToFirst()) {
+                        count = cursor.getInt(0)
+                    }
+                    cursor.close()
+                    if (count == 0) {
+                        DatabaseSeeder.poblar(db)
+                    }
+                }
             })
             .build()
     }
