@@ -1,22 +1,17 @@
 package com.devvault.app.ui.categorias
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -27,13 +22,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.devvault.app.ui.components.CategoriaCard
 import com.devvault.app.ui.theme.DevVaultTheme
 
 @Composable
@@ -86,48 +80,15 @@ fun CategoriasScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(uiState.categorias, key = { it.id }) { categoria ->
-                        CategoriaCard(categoria, onClick = { onCategoriaClick(categoria.id) })
+                        CategoriaCard(
+                            nombre = categoria.nombre,
+                            totalSnippets = categoria.totalSnippets,
+                            color = Color(categoria.color),
+                            onClick = { onCategoriaClick(categoria.id) }
+                        )
                     }
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun CategoriaCard(categoria: CategoriaConConteo, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
-        )
-    ) {
-        Column(Modifier.padding(12.dp)) {
-            Box(
-                modifier = Modifier
-                    .size(30.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(categoria.color)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    categoria.nombre.take(1).uppercase(),
-                    color = Color(0xFF05070D),
-                    fontWeight = FontWeight.Bold
-                )
-            }
-            Text(
-                categoria.nombre,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = 12.dp)
-            )
-            Text(
-                if (categoria.totalSnippets == 1) "1 snippet" else "${categoria.totalSnippets} snippets",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }

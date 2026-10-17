@@ -41,7 +41,7 @@ class FavoritosViewModel @Inject constructor(
             }
         }
 
-        val ordenados = filtrados.sortedByDescending { it.fechaFavorito }
+        val ordenados = filtrados.sortedByDescending { it.fechaFavorito ?: 0L }
 
         if (ordenados.isEmpty()) {
             FavoritosUiState.Empty
@@ -61,7 +61,7 @@ class FavoritosViewModel @Inject constructor(
     fun alternarFavorito(snippet: SnippetEntity) {
         viewModelScope.launch {
             val nuevoEstadoFavorito = !snippet.esFavorito
-            val tiempoActual = if (nuevoEstadoFavorito) System.currentTimeMillis() else 0L
+            val tiempoActual = if (nuevoEstadoFavorito) System.currentTimeMillis() else null
 
             repository.actualizarSnippet(
                 snippet.copy(
