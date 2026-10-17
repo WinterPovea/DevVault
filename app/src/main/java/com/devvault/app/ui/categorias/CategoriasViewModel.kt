@@ -2,8 +2,6 @@ package com.devvault.app.ui.categorias
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.devvault.app.data.local.entity.CategoriaEntity
-import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
@@ -13,30 +11,70 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 @HiltViewModel
 class CategoriasViewModel @Inject constructor(
-    repository: DevVaultRepository
+    private val repository: DevVaultRepository
 ) : ViewModel() {
 
     private val busqueda = MutableStateFlow("")
+    private val seleccionadaId = MutableStateFlow<Long?>(null)
 
     val uiState: StateFlow<CategoriasUiState> =
-        combine<List<CategoriaEntity>, List<SnippetEntity>, String, CategoriasUiState>(
+        combine(
             repository.obtenerCategorias(),
             repository.obtenerSnippets(),
-            busqueda
-        ) { categorias, snippets, texto ->
+            busqueda,
+            seleccionadaId
+        ) { categorias, snippets, texto, seleccionada ->
             val conteos = snippets.groupingBy { it.categoriaId }.eachCount()
             val filtradas = categorias
                 .filter { it.nombre.contains(texto.trim(), ignoreCase = true) }
                 .map { CategoriaConConteo(it.id, it.nombre, it.color, conteos[it.id] ?: 0) }
-            CategoriasUiState.Success(filtradas, texto)
+            CategoriasUiState.Success(
+                categorias = filtradas,
+                busqueda = texto,
+                seleccionadaId = seleccionada
+            ) as CategoriasUiState
         }
             .catch { emit(CategoriasUiState.Error(it.message ?: "Error desconocido")) }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CategoriasUiState.Loading)
 
     fun onBusquedaChange(texto: String) {
         busqueda.value = texto
+    }
+
+    fun onToggleSeleccion(id: Long) {
+        seleccionadaId.update { if (it == id) null else id }
+    }
+
+    fun onCancelarSeleccion() {
+        seleccionadaId.value = null
+    }
+
+    fun onEditarCategoria(id: Long, nuevoNombre: String) {
+        val nombreLimpio = nuevoNombre.trim()
+        if (nombreLimpio.isBlank()) return
+        viewModelScope.launch {
+            val categoriaActual = repository.obtenerCategoriaPorId(id)
+            if (categoriaActual != null) {
+                repository.actualizarCategoria(categoriaActual.copy(nombre = nombreLimpio))
+                seleccionadaId.value = null
+            }
+        }
+    }
+
+    fun onEliminarCategoria(id: Long) {
+        viewModelScope.launch {
+            val categoria = repository.obtenerCategoriaPorId(id)
+            if (categoria != null) {
+                repository.eliminarCategoria(categoria)
+                if (seleccionadaId.value == id) {
+                    seleccionadaId.value = null
+                }
+            }
+        }
     }
 }
