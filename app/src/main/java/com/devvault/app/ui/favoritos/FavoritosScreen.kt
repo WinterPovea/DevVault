@@ -16,14 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.ui.components.SnippetCard
 import com.devvault.app.ui.home.components.SearchBar
-import com.devvault.app.ui.theme.DevVaultTheme
 
 @Composable
 fun FavoritosRoute(
@@ -85,6 +83,7 @@ fun FavoritosScreen(
                 )
             )
         },
+        contentWindowInsets = WindowInsets(0.dp),
         modifier = modifier
     ) { paddingValues ->
         Column(
@@ -103,8 +102,9 @@ fun FavoritosScreen(
             )
 
             Box(
+
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .weight(1f)
             ) {
                 when (uiState) {
@@ -124,7 +124,7 @@ fun FavoritosScreen(
                     is FavoritosUiState.Success -> {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 80.dp),
+                            contentPadding = PaddingValues(bottom = 24.dp),
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(items = uiState.favoritos, key = { it.id }) { snippet ->
@@ -139,32 +139,5 @@ fun FavoritosScreen(
                 }
             }
         }
-    }
-}
-
-@Preview(showSystemUi = true)
-@Composable
-private fun FavoritosScreenPreview() {
-    DevVaultTheme {
-        FavoritosScreen(
-            uiState = FavoritosUiState.Success(
-                favoritos = listOf(
-                    SnippetEntity(
-                        id = 1,
-                        categoriaId = 1,
-                        titulo = "Crear ENV",
-                        contenido = "docker run --env-file .env app",
-                        lenguaje = "Crear ENV container",
-                        esFavorito = true,
-                        fechaCreacion = System.currentTimeMillis(),
-                        fechaFavorito = System.currentTimeMillis()
-                    )
-                )
-            ),
-            searchQuery = "",
-            onSearchQueryChange = {},
-            onCopyClick = {},
-            onFavoriteClick = {}
-        )
     }
 }
