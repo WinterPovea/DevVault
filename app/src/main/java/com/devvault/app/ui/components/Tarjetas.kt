@@ -26,14 +26,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.ui.theme.DevVaultTheme
+import com.devvault.app.ui.add_snippet.CodeSyntaxVisualTransformation
 
 private val ColorEstrella = Color(0xFFF5C94B)
+private val CodeBackground = Color(0xFF05070B)
 
 @Composable
 fun CategoriaCard(
@@ -111,19 +114,23 @@ fun SnippetCard(
                     )
                 }
             }
+
             Surface(
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
                 shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.surfaceContainerLowest
+                color = CodeBackground
             ) {
+                val transformation = CodeSyntaxVisualTransformation(snippet.lenguaje ?: "")
+                val textoResaltado = transformation.filter(AnnotatedString(snippet.contenido)).text
+
                 Text(
-                    snippet.contenido,
+                    text = textoResaltado,
                     modifier = Modifier.padding(8.dp),
                     fontFamily = FontFamily.Monospace,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.tertiary
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
+
             Row(
                 modifier = Modifier.padding(top = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
