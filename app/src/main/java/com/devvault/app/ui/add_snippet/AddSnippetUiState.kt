@@ -8,5 +8,10 @@ data class AddSnippetUiState(
     val selectedCategoriaId: Long? = null,
     val categorias: List<CategoriaEntity> = emptyList(),
     val expandedDropdown: Boolean = false,
-    val isSaved: Boolean = false
+    val isSaved: Boolean = false,
+    val showAddCategoriaDialog: Boolean = false,
+    val nombreError: String? = null,
+    val contenidoError: String? = null,
+    val categoriaError: String? = null,
+    val snackbarMessage: String? = null
 )
