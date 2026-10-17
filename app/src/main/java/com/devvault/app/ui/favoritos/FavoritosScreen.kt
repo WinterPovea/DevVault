@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.components.SnippetCard
 import com.devvault.app.ui.home.components.SearchBar
 import com.devvault.app.ui.theme.DevVaultTheme
 
@@ -123,13 +124,14 @@ fun FavoritosScreen(
                     is FavoritosUiState.Success -> {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 80.dp)
+                            contentPadding = PaddingValues(bottom = 80.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(items = uiState.favoritos, key = { it.id }) { snippet ->
-                                FavoritoSnippetCard(
+                                SnippetCard(
                                     snippet = snippet,
-                                    onCopyClick = onCopyClick,
-                                    onFavoriteClick = { onFavoriteClick(snippet) }
+                                    onToggleFavorito = { onFavoriteClick(snippet) },
+                                    onCopiar = { onCopyClick(snippet.contenido) },
                                 )
                             }
                         }
@@ -154,7 +156,8 @@ private fun FavoritosScreenPreview() {
                         contenido = "docker run --env-file .env app",
                         lenguaje = "Crear ENV container",
                         esFavorito = true,
-                        fechaCreacion = System.currentTimeMillis()
+                        fechaCreacion = System.currentTimeMillis(),
+                        fechaFavorito = System.currentTimeMillis()
                     )
                 )
             ),
