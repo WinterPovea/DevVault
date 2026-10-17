@@ -1,23 +1,17 @@
 package com.devvault.app.navigation
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
 import com.devvault.app.ui.home.HomeRoute
 import com.devvault.app.ui.add_snippet.AddSnippetRoute
 import com.devvault.app.ui.categoria.CategoriaDetailRoute
 import com.devvault.app.ui.categorias.CategoriasRoute
 import com.devvault.app.ui.favoritos.FavoritosRoute
-import com.devvault.app.ui.home.SnippetDetailRoute
+import com.devvault.app.ui.snippet_detail.SnippetDetailRoute
+
 @Composable
 fun DevVaultNavHost(
     navController: NavHostController,
@@ -73,17 +67,5 @@ fun DevVaultNavHost(
                 onBackClick = { navController.popBackStack() }
             )
         }
-    }
-}
-
-@Composable
-private fun PlaceholderScreen(nombre: String) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text("Pantalla: $nombre (pendiente)")
     }
 }
