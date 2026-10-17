@@ -36,5 +36,5 @@ data class SnippetEntity(
 
     val fechaCreacion: Long,
 
-    val fechaFavorito: Long = 0L
+    val fechaFavorito: Long? = null
 )
