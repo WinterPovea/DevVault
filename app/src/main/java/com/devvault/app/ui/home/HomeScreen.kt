@@ -70,68 +70,89 @@ fun HomeScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        val searchQuery = when (uiState) {
+            is HomeUiState.Success -> uiState.searchQuery
+            else -> ""
+        }
+
         SearchBar(
-            query = uiState.searchQuery,
+            query = searchQuery,
             onQueryChange = { onEvent(HomeEvent.OnSearchQueryChange(it)) },
             onClearClick = { onEvent(HomeEvent.OnClearSearch) }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        val isSearching = (uiState as? HomeUiState.Success)?.isSearching == true
+
         // Etiqueta dinámica: RECIENTES o RESULTADOS
         Text(
-            text = if (uiState.isSearching) "RESULTADOS" else "RECIENTES",
+            text = if (isSearching) "RESULTADOS" else "RECIENTES",
             color = TextSecondary,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        // Contenedor principal que maneja los 4 estados posibles de la lista
-        Box(modifier = Modifier
-            .weight(1f)
-            .fillMaxWidth()) {
-            when {
+        // Contenedor principal que maneja los estados posibles de la lista
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            when (uiState) {
                 // Estado 1: Cargando datos de Room
-                uiState.isLoading -> {
+                is HomeUiState.Loading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center),
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-                // Estado 2: Base de datos vacía (Sin recientes)
-                uiState.isEmpty && !uiState.isSearching -> {
+                // Estado 2: Error
+                is HomeUiState.Error -> {
                     Text(
-                        text = "Aún no tienes snippets guardados.\n¡Agrega uno nuevo!",
-                        color = TextSecondary,
+                        text = uiState.mensaje,
+                        color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                // Estado 3: Búsqueda sin resultados
-                uiState.isEmpty && uiState.isSearching -> {
-                    Text(
-                        text = "No se encontraron resultados para\n\"${uiState.searchQuery}\"",
-                        color = TextSecondary,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
-                // Estado 4: Con datos (Mostrar lista)
-                else -> {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(
-                            items = uiState.snippets,
-                            key = { it.id } // Optimiza el rendimiento de la lista
-                        ) { snippet ->
-                            SnippetListItem(
-                                snippet = snippet,
-                                onClick = { onEvent(HomeEvent.OnSnippetClick(snippet.id)) }
+                // Estado 3: Éxito (con datos, vacío o sin resultados de búsqueda)
+                is HomeUiState.Success -> {
+                    when {
+                        uiState.isEmpty && !uiState.isSearching -> {
+                            Text(
+                                text = "Aún no tienes snippets guardados.\n¡Agrega uno nuevo!",
+                                color = TextSecondary,
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.align(Alignment.Center)
                             )
+                        }
+                        uiState.isEmpty && uiState.isSearching -> {
+                            Text(
+                                text = "No se encontraron resultados para\n\"${uiState.searchQuery}\"",
+                                color = TextSecondary,
+                                style = MaterialTheme.typography.bodyLarge,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        }
+                        else -> {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                items(
+                                    items = uiState.snippets,
+                                    key = { it.id } // Optimiza el rendimiento de la lista
+                                ) { snippet ->
+                                    SnippetListItem(
+                                        snippet = snippet,
+                                        onClick = { onEvent(HomeEvent.OnSnippetClick(snippet.id)) }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -153,7 +174,7 @@ private val dummySnippets = listOf(
 private fun HomeScreenLoadingPreview() {
     DevVaultTheme {
         HomeScreen(
-            uiState = HomeUiState(isLoading = true),
+            uiState = HomeUiState.Loading,
             onEvent = {}
         )
     }
@@ -164,7 +185,7 @@ private fun HomeScreenLoadingPreview() {
 private fun HomeScreenWithDataPreview() {
     DevVaultTheme {
         HomeScreen(
-            uiState = HomeUiState(isLoading = false, snippets = dummySnippets),
+            uiState = HomeUiState.Success(snippets = dummySnippets),
             onEvent = {}
         )
     }
@@ -175,7 +196,7 @@ private fun HomeScreenWithDataPreview() {
 private fun HomeScreenEmptyPreview() {
     DevVaultTheme {
         HomeScreen(
-            uiState = HomeUiState(isLoading = false, snippets = emptyList()),
+            uiState = HomeUiState.Success(snippets = emptyList()),
             onEvent = {}
         )
     }
@@ -186,11 +207,21 @@ private fun HomeScreenEmptyPreview() {
 private fun HomeScreenNoResultsPreview() {
     DevVaultTheme {
         HomeScreen(
-            uiState = HomeUiState(
+            uiState = HomeUiState.Success(
                 searchQuery = "Error 404",
-                isLoading = false,
                 snippets = emptyList()
             ),
+            onEvent = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF141A2B)
+@Composable
+private fun HomeScreenErrorPreview() {
+    DevVaultTheme {
+        HomeScreen(
+            uiState = HomeUiState.Error("Error al cargar snippets"),
             onEvent = {}
         )
     }

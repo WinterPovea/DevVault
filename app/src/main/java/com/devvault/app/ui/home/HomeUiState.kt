@@ -2,17 +2,19 @@ package com.devvault.app.ui.home
 
 import com.devvault.app.data.local.entity.SnippetEntity
 
-data class HomeUiState(
-    val searchQuery: String = "",
-    val isLoading: Boolean = true,
-    val snippets: List<SnippetEntity> = emptyList(),
-    val errorMessage: String? = null
-) {
-    val isSearching: Boolean
-        get() = searchQuery.isNotBlank()
+sealed interface HomeUiState {
+    data object Loading : HomeUiState
+    data class Success(
+        val searchQuery: String = "",
+        val snippets: List<SnippetEntity> = emptyList()
+    ) : HomeUiState {
+        val isSearching: Boolean
+            get() = searchQuery.isNotBlank()
 
-    val isEmpty: Boolean
-        get() = !isLoading && snippets.isEmpty()
+        val isEmpty: Boolean
+            get() = snippets.isEmpty()
+    }
+    data class Error(val mensaje: String) : HomeUiState
 }
 
 sealed interface HomeEvent {

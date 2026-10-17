@@ -9,13 +9,14 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.flow.map
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
@@ -38,15 +39,16 @@ class HomeViewModel @Inject constructor(
                 }
             }
     ) { currentQuery, snippetsResult ->
-        HomeUiState(
+        HomeUiState.Success(
             searchQuery = currentQuery,
-            isLoading = false,
             snippets = snippetsResult
-        )
+        ) as HomeUiState
+    }.catch { e ->
+        emit(HomeUiState.Error(e.message ?: "Error al cargar snippets"))
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000L),
-        initialValue = HomeUiState(isLoading = true) // Estado inicial de carga
+        initialValue = HomeUiState.Loading // Estado inicial de carga
     )
 
     fun onEvent(event: HomeEvent) {

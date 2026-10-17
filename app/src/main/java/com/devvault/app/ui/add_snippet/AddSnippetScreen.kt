@@ -49,46 +49,70 @@ fun AddSnippetRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(uiState.snackbarMessage) {
-        uiState.snackbarMessage?.let { mensaje ->
-            snackbarHostState.showSnackbar(mensaje)
-            viewModel.clearSnackbarMessage()
-        }
-    }
-
-    LaunchedEffect(uiState.isSaved) {
-        if (uiState.isSaved) {
-            delay(1000)
-            onNavigateBack()
-        }
-    }
-
-    if (uiState.showAddCategoriaDialog) {
-        CrearCategoriaDialog(
-            onDismiss = { viewModel.setShowAddCategoriaDialog(false) },
-            onCrear = { nombre, color ->
-                viewModel.crearCategoria(nombre, color)
+    when (val state = uiState) {
+        is AddSnippetUiState.Loading -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(BackgroundDark),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = PrimaryCyan)
             }
-        )
-    }
+        }
+        is AddSnippetUiState.Error -> {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(BackgroundDark),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = state.mensaje, color = MaterialTheme.colorScheme.error)
+            }
+        }
+        is AddSnippetUiState.Success -> {
+            LaunchedEffect(state.snackbarMessage) {
+                state.snackbarMessage?.let { mensaje ->
+                    snackbarHostState.showSnackbar(mensaje)
+                    viewModel.clearSnackbarMessage()
+                }
+            }
 
-    AddSnippetScreen(
-        uiState = uiState,
-        snackbarHostState = snackbarHostState,
-        onNombreChange = viewModel::onNombreChange,
-        onContenidoChange = viewModel::onContenidoChange,
-        onCategoriaSelected = viewModel::onCategoriaSelected,
-        toggleDropdown = viewModel::toggleDropdown,
-        onOpenAddCategoriaDialog = { viewModel.setShowAddCategoriaDialog(true) },
-        onSave = viewModel::saveSnippet,
-        onNavigateBack = onNavigateBack
-    )
+            LaunchedEffect(state.isSaved) {
+                if (state.isSaved) {
+                    delay(1000)
+                    onNavigateBack()
+                }
+            }
+
+            if (state.showAddCategoriaDialog) {
+                CrearCategoriaDialog(
+                    onDismiss = { viewModel.setShowAddCategoriaDialog(false) },
+                    onCrear = { nombre, color ->
+                        viewModel.crearCategoria(nombre, color)
+                    }
+                )
+            }
+
+            AddSnippetScreen(
+                uiState = state,
+                snackbarHostState = snackbarHostState,
+                onNombreChange = viewModel::onNombreChange,
+                onContenidoChange = viewModel::onContenidoChange,
+                onCategoriaSelected = viewModel::onCategoriaSelected,
+                toggleDropdown = viewModel::toggleDropdown,
+                onOpenAddCategoriaDialog = { viewModel.setShowAddCategoriaDialog(true) },
+                onSave = viewModel::saveSnippet,
+                onNavigateBack = onNavigateBack
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddSnippetScreen(
-    uiState: AddSnippetUiState,
+    uiState: AddSnippetUiState.Success,
     snackbarHostState: SnackbarHostState,
     onNombreChange: (String) -> Unit,
     onContenidoChange: (String) -> Unit,
@@ -443,7 +467,7 @@ fun CrearCategoriaDialog(
 private fun AddSnippetScreenPreview() {
     DevVaultTheme {
         AddSnippetScreen(
-            uiState = AddSnippetUiState(
+            uiState = AddSnippetUiState.Success(
                 nombre = "Imprimir en consola",
                 contenido = "fun main() {\n    println(\"Hello DevVault!\")\n}",
                 selectedCategoriaId = 1L,

@@ -18,24 +18,31 @@ class AddSnippetViewModel @Inject constructor(
     private val repository: DevVaultRepository
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(AddSnippetUiState())
+    private val _uiState = MutableStateFlow<AddSnippetUiState>(AddSnippetUiState.Loading)
     val uiState: StateFlow<AddSnippetUiState> = _uiState.asStateFlow()
 
     init {
         viewModelScope.launch {
             repository.obtenerCategorias().collect { categorias ->
                 _uiState.update { current ->
-                    current.copy(
+                    val existing = (current as? AddSnippetUiState.Success) ?: AddSnippetUiState.Success()
+                    existing.copy(
                         categorias = categorias,
-                        selectedCategoriaId = current.selectedCategoriaId ?: categorias.firstOrNull()?.id
+                        selectedCategoriaId = existing.selectedCategoriaId ?: categorias.firstOrNull()?.id
                     )
                 }
             }
         }
     }
 
+    private fun updateSuccess(transform: (AddSnippetUiState.Success) -> AddSnippetUiState.Success) {
+        _uiState.update { current ->
+            if (current is AddSnippetUiState.Success) transform(current) else current
+        }
+    }
+
     fun onNombreChange(nombre: String) {
-        _uiState.update {
+        updateSuccess {
             it.copy(
                 nombre = nombre,
                 nombreError = if (nombre.isNotBlank()) null else it.nombreError
@@ -44,7 +51,7 @@ class AddSnippetViewModel @Inject constructor(
     }
 
     fun onContenidoChange(contenido: String) {
-        _uiState.update {
+        updateSuccess {
             it.copy(
                 contenido = contenido,
                 contenidoError = if (contenido.isNotBlank()) null else it.contenidoError
@@ -53,7 +60,7 @@ class AddSnippetViewModel @Inject constructor(
     }
 
     fun onCategoriaSelected(categoriaId: Long) {
-        _uiState.update {
+        updateSuccess {
             it.copy(
                 selectedCategoriaId = categoriaId,
                 expandedDropdown = false,
@@ -62,10 +69,10 @@ class AddSnippetViewModel @Inject constructor(
         }
     }
 
-    fun toggleDropdown(expanded: Boolean) = _uiState.update { it.copy(expandedDropdown = expanded) }
+    fun toggleDropdown(expanded: Boolean) = updateSuccess { it.copy(expandedDropdown = expanded) }
 
     fun setShowAddCategoriaDialog(show: Boolean) {
-        _uiState.update { it.copy(showAddCategoriaDialog = show) }
+        updateSuccess { it.copy(showAddCategoriaDialog = show) }
     }
 
     fun crearCategoria(nombre: String, color: Long) {
@@ -76,7 +83,7 @@ class AddSnippetViewModel @Inject constructor(
                 color = color
             )
             val idGenerado = repository.insertarCategoria(nueva)
-            _uiState.update {
+            updateSuccess {
                 it.copy(
                     showAddCategoriaDialog = false,
                     selectedCategoriaId = idGenerado,
@@ -88,11 +95,11 @@ class AddSnippetViewModel @Inject constructor(
     }
 
     fun clearSnackbarMessage() {
-        _uiState.update { it.copy(snackbarMessage = null) }
+        updateSuccess { it.copy(snackbarMessage = null) }
     }
 
     fun saveSnippet() {
-        val state = _uiState.value
+        val state = _uiState.value as? AddSnippetUiState.Success ?: return
 
         val nombreError = if (state.nombre.isBlank()) "Ingresa un nombre para el snippet" else null
         val contenidoError = if (state.contenido.isBlank()) "Ingresa el código del snippet" else null
@@ -100,7 +107,7 @@ class AddSnippetViewModel @Inject constructor(
 
         if (nombreError != null || contenidoError != null || categoriaError != null) {
             val primerMensaje = categoriaError ?: nombreError ?: contenidoError
-            _uiState.update {
+            updateSuccess {
                 it.copy(
                     nombreError = nombreError,
                     contenidoError = contenidoError,
@@ -125,7 +132,7 @@ class AddSnippetViewModel @Inject constructor(
             )
             repository.insertarSnippet(newSnippet)
 
-            _uiState.update { it.copy(isSaved = true) }
+            updateSuccess { it.copy(isSaved = true) }
         }
     }
 }
