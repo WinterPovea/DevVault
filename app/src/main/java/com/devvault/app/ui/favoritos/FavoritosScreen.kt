@@ -1,8 +1,5 @@
 package com.devvault.app.ui.favoritos
 
-import android.content.ClipData
-import android.content.ClipboardManager
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,12 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.ui.components.SnippetCard
 import com.devvault.app.ui.home.components.SearchBar
+import com.devvault.app.ui.theme.DevVaultTheme
+import com.devvault.app.util.copiarAlPortapapeles
 
 @Composable
 fun FavoritosRoute(
@@ -30,17 +30,13 @@ fun FavoritosRoute(
     onBackClick: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     FavoritosScreen(
         uiState = uiState,
-        searchQuery = searchQuery,
-        onSearchQueryChange = viewModel::updateSearchQuery,
+        onSearchQueryChange = viewModel::onSearchChange,
         onCopyClick = { textoCodigo ->
-            val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-            val clip = ClipData.newPlainText("Código", textoCodigo)
-            clipboard.setPrimaryClip(clip)
+            copiarAlPortapapeles(context, textoCodigo)
             Toast.makeText(context, "Código copiado al portapapeles", Toast.LENGTH_SHORT).show()
         },
         onFavoriteClick = { snippet ->
@@ -55,7 +51,6 @@ fun FavoritosRoute(
 @Composable
 fun FavoritosScreen(
     uiState: FavoritosUiState,
-    searchQuery: String,
     onSearchQueryChange: (String) -> Unit,
     onCopyClick: (String) -> Unit,
     onFavoriteClick: (SnippetEntity) -> Unit,
@@ -63,6 +58,10 @@ fun FavoritosScreen(
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
+    val searchQuery = when (uiState) {
+        is FavoritosUiState.Success -> uiState.searchQuery
+        else -> ""
+    }
 
     Scaffold(
         containerColor = colors.background,
@@ -102,7 +101,6 @@ fun FavoritosScreen(
             )
 
             Box(
-
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -114,30 +112,75 @@ fun FavoritosScreen(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
-                    is FavoritosUiState.Empty -> {
+                    is FavoritosUiState.Error -> {
                         Text(
-                            text = if (searchQuery.isEmpty()) "Aún no tienes comandos favoritos." else "No se encontraron resultados.",
-                            color = colors.onSurfaceVariant,
+                            text = uiState.mensaje,
+                            color = MaterialTheme.colorScheme.error,
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
                     is FavoritosUiState.Success -> {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 24.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(items = uiState.favoritos, key = { it.id }) { snippet ->
-                                SnippetCard(
-                                    snippet = snippet,
-                                    onToggleFavorito = { onFavoriteClick(snippet) },
-                                    onCopiar = { onCopyClick(snippet.contenido) },
-                                )
+                        if (uiState.isEmpty) {
+                            Text(
+                                text = if (searchQuery.isEmpty()) "Aún no tienes comandos favoritos." else "No se encontraron resultados.",
+                                color = colors.onSurfaceVariant,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(bottom = 24.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(items = uiState.favoritos, key = { it.id }) { snippet ->
+                                    SnippetCard(
+                                        snippet = snippet,
+                                        onToggleFavorito = { onFavoriteClick(snippet) },
+                                        onCopiar = { onCopyClick(snippet.contenido) },
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF141A2B)
+@Composable
+private fun FavoritosScreenPreview() {
+    DevVaultTheme {
+        FavoritosScreen(
+            uiState = FavoritosUiState.Success(
+                favoritos = listOf(
+                    SnippetEntity(
+                        id = 1L,
+                        categoriaId = 1L,
+                        titulo = "Docker compose up",
+                        contenido = "docker compose up -d",
+                        lenguaje = "Docker",
+                        esFavorito = true,
+                        fechaCreacion = 0L,
+                        fechaFavorito = 100L
+                    ),
+                    SnippetEntity(
+                        id = 2L,
+                        categoriaId = 2L,
+                        titulo = "List pods",
+                        contenido = "kubectl get pods -A",
+                        lenguaje = "Kubernetes",
+                        esFavorito = true,
+                        fechaCreacion = 0L,
+                        fechaFavorito = 200L
+                    )
+                ),
+                searchQuery = ""
+            ),
+            onSearchQueryChange = {},
+            onCopyClick = {},
+            onFavoriteClick = {}
+        )
     }
 }
