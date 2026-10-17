@@ -17,6 +17,7 @@ import com.devvault.app.ui.add_snippet.AddSnippetScreen
 import com.devvault.app.ui.categoria.CategoriaDetailRoute
 import com.devvault.app.ui.categorias.CategoriasRoute
 import com.devvault.app.ui.favoritos.FavoritosRoute
+import com.devvault.app.ui.home.SnippetDetailRoute
 @Composable
 fun DevVaultNavHost(
     navController: NavHostController,
@@ -29,7 +30,8 @@ fun DevVaultNavHost(
     ) {
         composable<DevVaultRoute.Home> {
             HomeRoute(
-                onCategoriaClick = { navController.navigate(DevVaultRoute.CategoriaDetail(it)) }
+                onCategoriaClick = { navController.navigate(DevVaultRoute.CategoriaDetail(it)) },
+                onSnippetClick = { navController.navigate(DevVaultRoute.SnippetDetail(it)) } // NUEVO
             )
         }
 
@@ -66,9 +68,10 @@ fun DevVaultNavHost(
             )
         }
 
-        composable<DevVaultRoute.SnippetDetail> { backStackEntry ->
-            val ruta = backStackEntry.toRoute<DevVaultRoute.SnippetDetail>()
-            PlaceholderScreen("Snippet #${ruta.snippetId}")
+        composable<DevVaultRoute.SnippetDetail> {
+            SnippetDetailRoute(
+                onBackClick = { navController.popBackStack() }
+            )
         }
     }
 }

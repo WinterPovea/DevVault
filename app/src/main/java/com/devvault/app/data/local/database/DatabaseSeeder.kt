@@ -2,6 +2,7 @@ package com.devvault.app.data.local.database
 
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
+import android.util.Log
 import androidx.sqlite.db.SupportSQLiteDatabase
 
 object DatabaseSeeder {

@@ -34,6 +34,7 @@ import com.devvault.app.ui.theme.TextSecondary
 @Composable
 fun HomeRoute(
     onCategoriaClick: (Long) -> Unit,
+    onSnippetClick: (Long) -> Unit, // AGREGAMOS ESTE PARÁMETRO
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -42,17 +43,14 @@ fun HomeRoute(
         uiState = uiState,
         onEvent = { event ->
             if (event is HomeEvent.OnSnippetClick) {
-                val snippet = uiState.snippets.find { it.id == event.snippetId }
-                snippet?.let {
-                    onCategoriaClick(it.categoriaId)
-                }
+                // Ahora navegamos directo al detalle del snippet usando su ID
+                onSnippetClick(event.snippetId)
             } else {
                 viewModel.onEvent(event)
             }
         }
     )
 }
-
 @Composable
 fun HomeScreen(
     uiState: HomeUiState,
