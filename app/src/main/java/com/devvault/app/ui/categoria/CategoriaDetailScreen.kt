@@ -23,6 +23,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +49,17 @@ fun CategoriaDetailRoute(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is CategoriaDetailUiEvent.ShowMessage -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     CategoriaDetailScreen(
         uiState = uiState,
         onBack = onBack,
@@ -56,7 +68,7 @@ fun CategoriaDetailRoute(
         onEliminar = viewModel::onEliminarSnippet,
         onCopiar = { texto ->
             copiarAlPortapapeles(context, texto)
-            Toast.makeText(context, "Copiado", Toast.LENGTH_SHORT).show()
+            viewModel.notificarCopiado()
         }
     )
 }

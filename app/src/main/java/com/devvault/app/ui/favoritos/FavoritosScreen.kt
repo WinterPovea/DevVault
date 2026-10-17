@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,12 +33,22 @@ fun FavoritosRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is FavoritosUiEvent.ShowToast -> {
+                    Toast.makeText(context, event.message, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     FavoritosScreen(
         uiState = uiState,
         onSearchQueryChange = viewModel::onSearchChange,
         onCopyClick = { textoCodigo ->
             copiarAlPortapapeles(context, textoCodigo)
-            Toast.makeText(context, "Código copiado al portapapeles", Toast.LENGTH_SHORT).show()
+            viewModel.notificarCopiado()
         },
         onFavoriteClick = { snippet ->
             viewModel.alternarFavorito(snippet)

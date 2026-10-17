@@ -6,12 +6,20 @@ import com.devvault.app.data.local.entity.CategoriaEntity
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+sealed interface AddSnippetUiEvent {
+    data class ShowSnackbar(val message: String) : AddSnippetUiEvent
+    data object NavigateBack : AddSnippetUiEvent
+}
 
 @HiltViewModel
 class AddSnippetViewModel @Inject constructor(
@@ -20,6 +28,9 @@ class AddSnippetViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow<AddSnippetUiState>(AddSnippetUiState.Loading)
     val uiState: StateFlow<AddSnippetUiState> = _uiState.asStateFlow()
+
+    private val _events = Channel<AddSnippetUiEvent>(Channel.BUFFERED)
+    val events: Flow<AddSnippetUiEvent> = _events.receiveAsFlow()
 
     init {
         viewModelScope.launch {
@@ -87,10 +98,10 @@ class AddSnippetViewModel @Inject constructor(
                 it.copy(
                     showAddCategoriaDialog = false,
                     selectedCategoriaId = idGenerado,
-                    categoriaError = null,
-                    snackbarMessage = "Categoría \"${nombre.trim()}\" creada exitosamente"
+                    categoriaError = null
                 )
             }
+            _events.send(AddSnippetUiEvent.ShowSnackbar("Categoría \"${nombre.trim()}\" creada exitosamente"))
         }
     }
 
@@ -111,9 +122,13 @@ class AddSnippetViewModel @Inject constructor(
                 it.copy(
                     nombreError = nombreError,
                     contenidoError = contenidoError,
-                    categoriaError = categoriaError,
-                    snackbarMessage = primerMensaje
+                    categoriaError = categoriaError
                 )
+            }
+            primerMensaje?.let { msg ->
+                viewModelScope.launch {
+                    _events.send(AddSnippetUiEvent.ShowSnackbar(msg))
+                }
             }
             return
         }
@@ -133,6 +148,7 @@ class AddSnippetViewModel @Inject constructor(
             repository.insertarSnippet(newSnippet)
 
             updateSuccess { it.copy(isSaved = true) }
+            _events.send(AddSnippetUiEvent.NavigateBack)
         }
     }
 }

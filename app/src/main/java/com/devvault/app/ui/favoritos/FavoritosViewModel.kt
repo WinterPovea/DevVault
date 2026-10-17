@@ -5,11 +5,15 @@ import androidx.lifecycle.viewModelScope
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -26,12 +30,19 @@ sealed interface FavoritosUiState {
     data class Error(val mensaje: String) : FavoritosUiState
 }
 
+sealed interface FavoritosUiEvent {
+    data class ShowToast(val message: String) : FavoritosUiEvent
+}
+
 @HiltViewModel
 class FavoritosViewModel @Inject constructor(
     private val repository: DevVaultRepository
 ) : ViewModel() {
 
     private val _searchQuery = MutableStateFlow("")
+
+    private val _events = Channel<FavoritosUiEvent>(Channel.BUFFERED)
+    val events: Flow<FavoritosUiEvent> = _events.receiveAsFlow()
 
     val uiState: StateFlow<FavoritosUiState> = combine(
         repository.obtenerSnippetsFavoritos(),
@@ -75,6 +86,12 @@ class FavoritosViewModel @Inject constructor(
                     fechaFavorito = tiempoActual
                 )
             )
+        }
+    }
+
+    fun notificarCopiado() {
+        viewModelScope.launch {
+            _events.send(FavoritosUiEvent.ShowToast("Código copiado al portapapeles"))
         }
     }
 }

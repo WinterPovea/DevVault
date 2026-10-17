@@ -5,14 +5,21 @@ import androidx.lifecycle.viewModelScope
 import com.devvault.app.data.repository.DevVaultRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+
+sealed interface CategoriasUiEvent {
+    data class ShowMessage(val message: String) : CategoriasUiEvent
+}
 
 @HiltViewModel
 class CategoriasViewModel @Inject constructor(
@@ -21,6 +28,9 @@ class CategoriasViewModel @Inject constructor(
 
     private val busqueda = MutableStateFlow("")
     private val seleccionadaId = MutableStateFlow<Long?>(null)
+
+    private val _events = Channel<CategoriasUiEvent>(Channel.BUFFERED)
+    val events: Flow<CategoriasUiEvent> = _events.receiveAsFlow()
 
     val uiState: StateFlow<CategoriasUiState> =
         combine(
@@ -62,6 +72,7 @@ class CategoriasViewModel @Inject constructor(
             if (categoriaActual != null) {
                 repository.actualizarCategoria(categoriaActual.copy(nombre = nombreLimpio))
                 seleccionadaId.value = null
+                _events.send(CategoriasUiEvent.ShowMessage("Categoría actualizada"))
             }
         }
     }
@@ -74,6 +85,7 @@ class CategoriasViewModel @Inject constructor(
                 if (seleccionadaId.value == id) {
                     seleccionadaId.value = null
                 }
+                _events.send(CategoriasUiEvent.ShowMessage("Categoría eliminada"))
             }
         }
     }

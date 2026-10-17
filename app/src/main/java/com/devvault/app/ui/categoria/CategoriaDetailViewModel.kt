@@ -10,12 +10,19 @@ import com.devvault.app.data.repository.DevVaultRepository
 import com.devvault.app.navigation.DevVaultRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+sealed interface CategoriaDetailUiEvent {
+    data class ShowMessage(val message: String) : CategoriaDetailUiEvent
+}
 
 @HiltViewModel
 class CategoriaDetailViewModel @Inject constructor(
@@ -24,6 +31,15 @@ class CategoriaDetailViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val categoriaId = savedStateHandle.toRoute<DevVaultRoute.CategoriaDetail>().categoriaId
+
+    private val _events = Channel<CategoriaDetailUiEvent>(Channel.BUFFERED)
+    val events: Flow<CategoriaDetailUiEvent> = _events.receiveAsFlow()
+
+    fun notificarCopiado() {
+        viewModelScope.launch {
+            _events.send(CategoriaDetailUiEvent.ShowMessage("Código copiado al portapapeles"))
+        }
+    }
 
     val uiState: StateFlow<CategoriaDetailUiState> =
         combine<List<CategoriaEntity>, List<SnippetEntity>, CategoriaDetailUiState>(

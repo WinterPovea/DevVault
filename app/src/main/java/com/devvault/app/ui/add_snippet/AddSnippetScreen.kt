@@ -49,6 +49,20 @@ fun AddSnippetRoute(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    LaunchedEffect(Unit) {
+        viewModel.events.collect { event ->
+            when (event) {
+                is AddSnippetUiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+                AddSnippetUiEvent.NavigateBack -> {
+                    delay(1000)
+                    onNavigateBack()
+                }
+            }
+        }
+    }
+
     when (val state = uiState) {
         is AddSnippetUiState.Loading -> {
             Box(
@@ -71,20 +85,6 @@ fun AddSnippetRoute(
             }
         }
         is AddSnippetUiState.Success -> {
-            LaunchedEffect(state.snackbarMessage) {
-                state.snackbarMessage?.let { mensaje ->
-                    snackbarHostState.showSnackbar(mensaje)
-                    viewModel.clearSnackbarMessage()
-                }
-            }
-
-            LaunchedEffect(state.isSaved) {
-                if (state.isSaved) {
-                    delay(1000)
-                    onNavigateBack()
-                }
-            }
-
             if (state.showAddCategoriaDialog) {
                 CrearCategoriaDialog(
                     onDismiss = { viewModel.setShowAddCategoriaDialog(false) },
