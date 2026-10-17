@@ -162,26 +162,34 @@ object DatabaseSeeder {
 
         db.beginTransaction()
         try {
-            categorias.forEach { c ->
-                val valores = ContentValues().apply {
-                    put("id", c.id)
-                    put("nombre", c.nombre)
-                    put("color", c.color)
+                // Insert categories
+                var insertedCategories = 0
+                categorias.forEach { c ->
+                    val valores = ContentValues().apply {
+                        put("id", c.id)
+                        put("nombre", c.nombre)
+                        put("color", c.color)
+                    }
+                    db.insert("categorias", SQLiteDatabase.CONFLICT_REPLACE, valores)
+                    insertedCategories++
                 }
-                db.insert("categorias", SQLiteDatabase.CONFLICT_REPLACE, valores)
-            }
+                Log.d("DevVaultSeed", "Inserted $insertedCategories categories")
 
-            snippets.forEachIndexed { indice, s ->
-                val valores = ContentValues().apply {
-                    put("categoriaId", s.categoriaId)
-                    put("titulo", s.titulo)
-                    put("contenido", s.contenido)
-                    put("lenguaje", s.lenguaje)
-                    put("esFavorito", if (s.esFavorito) 1 else 0)
-                    put("fechaCreacion", ahora - indice * 60_000L)
+                // Insert snippets
+                var insertedSnippets = 0
+                snippets.forEachIndexed { indice, s ->
+                    val valores = ContentValues().apply {
+                        put("categoriaId", s.categoriaId)
+                        put("titulo", s.titulo)
+                        put("contenido", s.contenido)
+                        put("lenguaje", s.lenguaje)
+                        put("esFavorito", if (s.esFavorito) 1 else 0)
+                        put("fechaCreacion", ahora - indice * 60_000L)
+                    }
+                    db.insert("snippets", SQLiteDatabase.CONFLICT_REPLACE, valores)
+                    insertedSnippets++
                 }
-                db.insert("snippets", SQLiteDatabase.CONFLICT_REPLACE, valores)
-            }
+                Log.d("DevVaultSeed", "Inserted $insertedSnippets snippets")
 
             db.setTransactionSuccessful()
         } finally {

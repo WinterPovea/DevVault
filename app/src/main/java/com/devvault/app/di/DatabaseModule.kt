@@ -14,6 +14,7 @@ import javax.inject.Singleton
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.devvault.app.data.local.database.DatabaseSeeder
+import android.util.Log
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -30,8 +31,9 @@ object DatabaseModule {
             "devvault_database"
         )
             .addCallback(object : RoomDatabase.Callback(){
-                override fun onCreate(db: SupportSQLiteDatabase){
+                override fun onCreate(db: SupportSQLiteDatabase) {
                     super.onCreate(db)
+                    Log.d("DevVaultSeed", "onCreate called, seeding database")
                     DatabaseSeeder.poblar(db)
                 }
 
@@ -43,7 +45,9 @@ object DatabaseModule {
                         count = cursor.getInt(0)
                     }
                     cursor.close()
+                    Log.d("DevVaultSeed", "onOpen: categorias count = $count")
                     if (count == 0) {
+                        Log.d("DevVaultSeed", "onOpen: no categories, seeding database")
                         DatabaseSeeder.poblar(db)
                     }
                 }
