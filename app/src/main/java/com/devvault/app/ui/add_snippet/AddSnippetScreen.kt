@@ -26,10 +26,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.devvault.app.data.local.entity.CategoriaEntity
 import com.devvault.app.ui.theme.BackgroundDark
 import com.devvault.app.ui.theme.CodeBackground
 import com.devvault.app.ui.theme.CodeText
+import com.devvault.app.ui.theme.DevVaultTheme
 import com.devvault.app.ui.theme.OutlineDark
 import com.devvault.app.ui.theme.PrimaryCyan
 import com.devvault.app.ui.theme.SurfaceDark
@@ -37,12 +41,12 @@ import com.devvault.app.ui.theme.TextSecondary
 import kotlinx.coroutines.delay
 
 @Composable
-fun AddSnippetScreen(
+fun AddSnippetRoute(
     onNavigateBack: () -> Unit,
     onNavigateToCategorias: () -> Unit = {},
     viewModel: AddSnippetViewModel = hiltViewModel()
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(uiState.snackbarMessage) {
@@ -68,7 +72,7 @@ fun AddSnippetScreen(
         )
     }
 
-    AddSnippetContent(
+    AddSnippetScreen(
         uiState = uiState,
         snackbarHostState = snackbarHostState,
         onNombreChange = viewModel::onNombreChange,
@@ -83,7 +87,7 @@ fun AddSnippetScreen(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddSnippetContent(
+fun AddSnippetScreen(
     uiState: AddSnippetUiState,
     snackbarHostState: SnackbarHostState,
     onNombreChange: (String) -> Unit,
@@ -432,4 +436,29 @@ fun CrearCategoriaDialog(
             }
         }
     )
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFF141A2B)
+@Composable
+private fun AddSnippetScreenPreview() {
+    DevVaultTheme {
+        AddSnippetScreen(
+            uiState = AddSnippetUiState(
+                nombre = "Imprimir en consola",
+                contenido = "fun main() {\n    println(\"Hello DevVault!\")\n}",
+                selectedCategoriaId = 1L,
+                categorias = listOf(
+                    CategoriaEntity(id = 1L, nombre = "Kotlin", color = 0xFF7F52FF)
+                )
+            ),
+            snackbarHostState = remember { SnackbarHostState() },
+            onNombreChange = {},
+            onContenidoChange = {},
+            onCategoriaSelected = {},
+            toggleDropdown = {},
+            onOpenAddCategoriaDialog = {},
+            onSave = {},
+            onNavigateBack = {}
+        )
+    }
 }

@@ -13,7 +13,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.devvault.app.ui.home.HomeRoute
-import com.devvault.app.ui.add_snippet.AddSnippetScreen
+import com.devvault.app.ui.add_snippet.AddSnippetRoute
 import com.devvault.app.ui.categoria.CategoriaDetailRoute
 import com.devvault.app.ui.categorias.CategoriasRoute
 import com.devvault.app.ui.favoritos.FavoritosRoute
@@ -42,7 +42,7 @@ fun DevVaultNavHost(
         }
 
         composable<DevVaultRoute.Agregar> {
-            AddSnippetScreen(
+            AddSnippetRoute(
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToCategorias = {
                     navController.navigate(DevVaultRoute.Categorias) {
