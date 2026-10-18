@@ -53,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -208,8 +209,14 @@ fun CategoriasScreen(
                 if (uiState.categorias.isEmpty()) {
                     EmptyView("No hay categorías")
                 } else {
+                    val screenWidthDp = LocalConfiguration.current.screenWidthDp
+                    val columnCount = when {
+                        screenWidthDp >= 840 -> 4
+                        screenWidthDp >= 600 -> 3
+                        else -> 2
+                    }
                     LazyVerticalGrid(
-                        columns = GridCells.Fixed(2),
+                        columns = GridCells.Fixed(columnCount),
                         modifier = Modifier.padding(top = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
