@@ -93,9 +93,9 @@ fun SnippetDetailScreen(
 
     if (showDeleteDialog) {
         DeleteConfirmDialog(
-            title = "Eliminar snippet",
-            text = "¿Estás seguro de que deseas eliminar este snippet? Esta acción no se puede deshacer.",
-            onConfirm = {
+            titulo = "Eliminar snippet",
+            mensaje = "¿Estás seguro de que deseas eliminar este snippet? Esta acción no se puede deshacer.",
+            onConfirmar = {
                 showDeleteDialog = false
                 onDeleteClick()
             },
