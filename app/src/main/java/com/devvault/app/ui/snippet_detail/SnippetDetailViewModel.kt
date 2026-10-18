@@ -93,4 +93,17 @@ class SnippetDetailViewModel @Inject constructor(
             _events.send(SnippetDetailUiEvent.ShowToast("Código copiado al portapapeles"))
         }
     }
+
+    fun editarSnippet(nuevoTitulo: String, nuevoContenido: String) {
+        val current = _uiState.value as? SnippetDetailUiState.Success ?: return
+        viewModelScope.launch {
+            val updated = current.snippet.copy(
+                titulo = nuevoTitulo.trim(),
+                contenido = nuevoContenido
+            )
+            repository.actualizarSnippet(updated.toEntity())
+            _uiState.value = current.copy(snippet = updated)
+            _events.send(SnippetDetailUiEvent.ShowToast("Snippet actualizado"))
+        }
+    }
 }

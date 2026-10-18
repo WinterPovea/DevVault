@@ -10,6 +10,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.*
@@ -70,7 +71,8 @@ fun SnippetDetailRoute(
                     viewModel.notificarCopiado()
                 },
                 onToggleFavorito = viewModel::alternarFavorito,
-                onDeleteClick = viewModel::eliminarSnippet
+                onDeleteClick = viewModel::eliminarSnippet,
+                onEditClick = viewModel::editarSnippet
             )
         }
     }
@@ -83,9 +85,11 @@ fun SnippetDetailScreen(
     onBackClick: () -> Unit,
     onCopyClick: (String) -> Unit,
     onToggleFavorito: () -> Unit,
-    onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    onEditClick: (String, String) -> Unit
 ) {
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     val visualTransformation = remember(uiState.categoriaNombre) {
         CodeSyntaxVisualTransformation(uiState.categoriaNombre)
@@ -103,6 +107,17 @@ fun SnippetDetailScreen(
         )
     }
 
+    if (showEditDialog) {
+        EditarSnippetDialog(
+            snippet = uiState.snippet,
+            onDismiss = { showEditDialog = false },
+            onGuardar = { nuevoTitulo, nuevoContenido ->
+                showEditDialog = false
+                onEditClick(nuevoTitulo, nuevoContenido)
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -113,6 +128,13 @@ fun SnippetDetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = { showEditDialog = true }) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = "Editar snippet",
+                            tint = Color.White
+                        )
+                    }
                     IconButton(onClick = onToggleFavorito) {
                         Icon(
                             imageVector = if (uiState.snippet.esFavorito) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
@@ -211,6 +233,77 @@ fun SnippetDetailScreen(
     }
 }
 
+@Composable
+private fun EditarSnippetDialog(
+    snippet: SnippetUi,
+    onDismiss: () -> Unit,
+    onGuardar: (String, String) -> Unit
+) {
+    var titulo by remember(snippet.id) { mutableStateOf(snippet.titulo) }
+    var contenido by remember(snippet.id) { mutableStateOf(snippet.contenido) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar snippet", color = Color.White, fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = titulo,
+                    onValueChange = { titulo = it },
+                    label = { Text("Nombre") },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryCyan,
+                        focusedLabelColor = PrimaryCyan,
+                        cursorColor = PrimaryCyan,
+                        unfocusedBorderColor = OutlineDark,
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = contenido,
+                    onValueChange = { contenido = it },
+                    label = { Text("Snippet") },
+                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    minLines = 3,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryCyan,
+                        focusedLabelColor = PrimaryCyan,
+                        cursorColor = PrimaryCyan,
+                        unfocusedBorderColor = OutlineDark,
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onGuardar(titulo, contenido) },
+                enabled = titulo.isNotBlank() && contenido.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = PrimaryCyan,
+                    contentColor = Color.Black
+                )
+            ) {
+                Text("Guardar", fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar", color = Color.White.copy(alpha = 0.7f))
+            }
+        },
+        containerColor = SurfaceDark,
+        shape = RoundedCornerShape(16.dp)
+    )
+}
+
 @Preview(showBackground = true, backgroundColor = 0xFF141A2B)
 @Composable
 private fun SnippetDetailScreenPreview() {
@@ -233,7 +326,8 @@ private fun SnippetDetailScreenPreview() {
             onBackClick = {},
             onCopyClick = {},
             onToggleFavorito = {},
-            onDeleteClick = {}
+            onDeleteClick = {},
+            onEditClick = { _, _ -> }
         )
     }
 }

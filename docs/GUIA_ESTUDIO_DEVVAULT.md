@@ -517,29 +517,32 @@ val uiState: StateFlow<FavoritosUiState> = combine(
 ## 4.6 Módulo: Detalle de Snippet
 
 ### 4.6.1 Qué ve y qué puede hacer el usuario
-- Barra superior con botón volver y botón de estrella (favorito).
+- Barra superior con botón volver, botón de editar (lápiz), botón de estrella (favorito) y botón de eliminar (basurero).
+- Diálogo modal de edición (`EditarSnippetDialog`) para modificar el título y el código del snippet en Compose oscuro.
 - Título completo del snippet en tipografía destacada.
 - Badge con el nombre y color de la categoría/lenguaje.
 - Bloque oscuro de código con Syntax Highlighting en fuente monoespaciada.
-- Botón principal "Copiar comando".
-- Botón "Eliminar snippet" con confirmación en diálogo modal.
+- Botón principal "Copiar código" con feedback en Toast.
+- Botón "Eliminar snippet" con confirmación en diálogo modal (`DeleteConfirmDialog`).
 
 ### 4.6.2 Explicación sencilla (para entender)
-Es la ficha técnica de un comando. Muestra el código en grande con sus colores, permite copiarlo en un toque y tiene la opción de eliminarlo si ya no te sirve.
+Es la ficha técnica de un comando. Muestra el código en grande con sus colores, permite editar su nombre o código en cualquier momento con el botón del lápiz, copiarlo en un toque y eliminarlo si ya no te sirve.
 
 ### 4.6.3 Explicación técnica (recorrido real)
 1. Recibe `snippetId` tipado desde `DevVaultRoute.SnippetDetail`.
 2. `SnippetDetailViewModel` consulta el snippet y su categoría mediante `obtenerSnippetPorId(id)` y `obtenerCategoriaPorId(catId)`.
-3. Si el usuario pulsa eliminar → invoca `repository.eliminarSnippet(entity)`.
-4. Emite `SnippetDetailUiEvent.ShowToast("Snippet eliminado")` y `SnippetDetailUiEvent.NavigateBack`.
-5. La vista intercepta el evento y regresa a la pantalla anterior.
+3. Al editar: el usuario pulsa el icono de lápiz → se despliega `EditarSnippetDialog` → pulsa "Guardar" → invoca `SnippetDetailViewModel.editarSnippet(nuevoTitulo, nuevoContenido)`.
+4. El ViewModel lanza corrutina con `repository.actualizarSnippet(updated.toEntity())`, actualiza `_uiState.value = current.copy(snippet = updated)` y emite `SnippetDetailUiEvent.ShowToast("Snippet actualizado")`.
+5. Si el usuario pulsa eliminar → invoca `repository.eliminarSnippet(entity)`.
+6. Emite `SnippetDetailUiEvent.ShowToast("Snippet eliminado")` y `SnippetDetailUiEvent.NavigateBack`.
+7. La vista intercepta el evento y regresa a la pantalla anterior.
 
 ### 4.6.4 Archivos del módulo
 - [`SnippetDetailUiState.kt`](file:///d:/Datos/Documentos/DevVault/app/src/main/java/com/devvault/app/ui/snippet_detail/SnippetDetailUiState.kt)
 - [`SnippetDetailViewModel.kt`](file:///d:/Datos/Documentos/DevVault/app/src/main/java/com/devvault/app/ui/snippet_detail/SnippetDetailViewModel.kt)
 - [`SnippetDetailScreen.kt`](file:///d:/Datos/Documentos/DevVault/app/src/main/java/com/devvault/app/ui/snippet_detail/SnippetDetailScreen.kt)
 - [`SnippetUiMapper.kt`](file:///d:/Datos/Documentos/DevVault/app/src/main/java/com/devvault/app/ui/snippet_detail/mapper/SnippetUiMapper.kt)
-- Componente: `DeleteConfirmDialog`.
+- Componente: `DeleteConfirmDialog` y `EditarSnippetDialog`.
 
 ### 4.6.5 Estados y eventos
 - `SnippetDetailUiState.Loading`, `Success(snippet: SnippetUi, categoriaNombre)`, `Error(mensaje)`.
@@ -547,28 +550,29 @@ Es la ficha técnica de un comando. Muestra el código en grande con sus colores
 
 ### 4.6.6 Cumplimiento de rúbrica en este módulo
 - Reemplazo completo y eliminación de cualquier `PlaceholderScreen`.
+- Soporte CRUD completo en pantalla de detalle: Consulta (R), Actualización (U) y Eliminación (D).
 - Integración con el diálogo compartido `DeleteConfirmDialog`.
 - Estado inmutable y lambdas hacia el Screen.
 
 ### 4.6.7 Fragmento de código clave
 ```kotlin
-// SnippetDetailViewModel.kt:70-76 - Alternar favorito y feedback reactivo
-fun alternarFavorito() {
+// SnippetDetailViewModel.kt:97-106 - Edición reactiva del snippet
+fun editarSnippet(nuevoTitulo: String, nuevoContenido: String) {
     val current = _uiState.value as? SnippetDetailUiState.Success ?: return
     viewModelScope.launch {
-        val nuevoFavorito = !current.snippet.esFavorito
-        val updated = current.snippet.copy(esFavorito = nuevoFavorito, fechaFavorito = if (nuevoFavorito) System.currentTimeMillis() else null)
+        val updated = current.snippet.copy(titulo = nuevoTitulo.trim(), contenido = nuevoContenido)
         repository.actualizarSnippet(updated.toEntity())
         _uiState.value = current.copy(snippet = updated)
-        _events.send(SnippetDetailUiEvent.ShowToast(if (nuevoFavorito) "Añadido a favoritos" else "Eliminado de favoritos"))
+        _events.send(SnippetDetailUiEvent.ShowToast("Snippet actualizado"))
     }
 }
 ```
 
 ### 4.6.8 Cómo mostrarlo en la demo (20 segundos)
 1. Tocar un snippet desde Home: entrar a su pantalla de detalle individual.
-2. Tocar "Copiar comando": mostrar el Toast y pegar en cualquier app externa si se requiere.
-3. Presionar "Eliminar snippet" y confirmar: ver cómo se elimina y retorna limpiamente a Home.
+2. Tocar el icono de lápiz (Editar): cambiarle el título o código y guardar, evidenciando la reactividad inmediata.
+3. Tocar "Copiar código": mostrar el Toast y pegar en cualquier app externa si se requiere.
+4. Presionar "Eliminar snippet" y confirmar: ver cómo se elimina y retorna limpiamente a Home.
 
 ### 4.6.9 Preguntas probables del docente
 1. *¿Cómo se resuelve el nombre de la categoría si el snippet solo tiene `categoriaId`?*  
