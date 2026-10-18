@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.devvault.app.data.local.entity.CategoriaEntity
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
+import com.devvault.app.domain.usecase.ValidarSnippetUseCase
 import com.devvault.app.ui.add_snippet.mapper.toUiList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -24,7 +25,8 @@ sealed interface AddSnippetUiEvent {
 
 @HiltViewModel
 class AddSnippetViewModel @Inject constructor(
-    private val repository: DevVaultRepository
+    private val repository: DevVaultRepository,
+    private val validarSnippetUseCase: ValidarSnippetUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<AddSnippetUiState>(AddSnippetUiState.Loading)
@@ -114,12 +116,18 @@ class AddSnippetViewModel @Inject constructor(
     fun saveSnippet() {
         val state = _uiState.value as? AddSnippetUiState.Success ?: return
 
-        val nombreError = if (state.nombre.isBlank()) "Ingresa un nombre para el snippet" else null
-        val contenidoError = if (state.contenido.isBlank()) "Ingresa el código del snippet" else null
+        val validationError = validarSnippetUseCase(state.nombre, state.contenido)
         val categoriaError = if (state.selectedCategoriaId == null) "Se necesita ingresar una categoría" else null
 
-        if (nombreError != null || contenidoError != null || categoriaError != null) {
-            val primerMensaje = categoriaError ?: nombreError ?: contenidoError
+        val nombreError = when {
+            state.nombre.isBlank() -> "Ingresa un nombre para el snippet"
+            state.nombre.length > 100 -> "El título no puede superar 100 caracteres"
+            else -> null
+        }
+        val contenidoError = if (state.contenido.isBlank()) "Ingresa el código del snippet" else null
+
+        if (validationError != null || categoriaError != null) {
+            val errorMsg = categoriaError ?: validationError ?: "Datos inválidos"
             updateSuccess {
                 it.copy(
                     nombreError = nombreError,
@@ -127,10 +135,8 @@ class AddSnippetViewModel @Inject constructor(
                     categoriaError = categoriaError
                 )
             }
-            primerMensaje?.let { msg ->
-                viewModelScope.launch {
-                    _events.send(AddSnippetUiEvent.ShowSnackbar(msg))
-                }
+            viewModelScope.launch {
+                _events.send(AddSnippetUiEvent.ShowSnackbar(errorMsg))
             }
             return
         }
