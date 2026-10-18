@@ -1,4 +1,4 @@
-package com.devvault.app.ui.home.components
+package com.devvault.app.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,7 +24,8 @@ fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
     onClearClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    placeholder: String = "Buscar en DevVault..."
 ) {
     OutlinedTextField(
         value = query,
@@ -32,7 +33,7 @@ fun SearchBar(
         modifier = modifier.fillMaxWidth(),
         placeholder = {
             Text(
-                text = "Buscar en DevVault...",
+                text = placeholder,
                 color = TextSecondary
             )
         },
@@ -60,7 +61,7 @@ fun SearchBar(
             focusedContainerColor = MaterialTheme.colorScheme.surface,
             unfocusedContainerColor = MaterialTheme.colorScheme.surface,
             focusedBorderColor = MaterialTheme.colorScheme.primary,
-            unfocusedBorderColor = Color.Transparent, // Sin borde cuando no está seleccionado para un look más limpio
+            unfocusedBorderColor = Color.Transparent,
             focusedTextColor = MaterialTheme.colorScheme.onBackground,
             unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
             cursorColor = MaterialTheme.colorScheme.primary
@@ -68,7 +69,6 @@ fun SearchBar(
     )
 }
 
-// Previews para comprobar cómo se ve vacío y con texto
 @Preview(showBackground = true, backgroundColor = 0xFF141A2B)
 @Composable
 private fun SearchBarEmptyPreview() {

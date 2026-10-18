@@ -30,7 +30,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.CategoriaEntity
+import com.devvault.app.ui.components.ErrorView
+import com.devvault.app.ui.components.LoadingView
 import com.devvault.app.ui.theme.BackgroundDark
+import com.devvault.app.ui.theme.CategoryPalette
 import com.devvault.app.ui.theme.CodeBackground
 import com.devvault.app.ui.theme.CodeText
 import com.devvault.app.ui.theme.DevVaultTheme
@@ -65,24 +68,10 @@ fun AddSnippetRoute(
 
     when (val state = uiState) {
         is AddSnippetUiState.Loading -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(BackgroundDark),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = PrimaryCyan)
-            }
+            LoadingView()
         }
         is AddSnippetUiState.Error -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(BackgroundDark),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = state.mensaje, color = MaterialTheme.colorScheme.error)
-            }
+            ErrorView(mensaje = state.mensaje)
         }
         is AddSnippetUiState.Success -> {
             if (state.showAddCategoriaDialog) {
@@ -352,18 +341,7 @@ fun CrearCategoriaDialog(
     onCrear: (String, Long) -> Unit
 ) {
     var nombre by remember { mutableStateOf("") }
-    val coloresDisponibles = remember {
-        listOf(
-            0xFF33C8F2, // PrimaryCyan
-            0xFF2496ED, // Docker Blue
-            0xFF7F52FF, // Kotlin Purple
-            0xFFF1502F, // Git Orange
-            0xFF4479A1, // SQL Blue
-            0xFFFCC624, // Linux Yellow
-            0xFF00ADD8, // Go Cyan
-            0xFF00E676  // Success Green
-        )
-    }
+    val coloresDisponibles = CategoryPalette
     var colorSeleccionado by remember { mutableStateOf(coloresDisponibles.first()) }
     var errorNombre by remember { mutableStateOf(false) }
 

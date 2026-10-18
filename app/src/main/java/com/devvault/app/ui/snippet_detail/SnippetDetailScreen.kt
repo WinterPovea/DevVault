@@ -27,6 +27,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.ui.add_snippet.CodeSyntaxVisualTransformation
+import com.devvault.app.ui.components.DeleteConfirmDialog
+import com.devvault.app.ui.components.ErrorView
+import com.devvault.app.ui.components.LoadingView
 import com.devvault.app.ui.theme.*
 import com.devvault.app.util.copiarAlPortapapeles
 
@@ -53,24 +56,10 @@ fun SnippetDetailRoute(
 
     when (val state = uiState) {
         is SnippetDetailUiState.Loading -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(BackgroundDark),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularProgressIndicator(color = PrimaryCyan)
-            }
+            LoadingView()
         }
         is SnippetDetailUiState.Error -> {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(BackgroundDark),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = state.mensaje, color = MaterialTheme.colorScheme.error)
-            }
+            ErrorView(mensaje = state.mensaje)
         }
         is SnippetDetailUiState.Success -> {
             SnippetDetailScreen(
@@ -103,27 +92,14 @@ fun SnippetDetailScreen(
     }
 
     if (showDeleteDialog) {
-        AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Eliminar snippet", fontWeight = FontWeight.Bold, color = Color.White) },
-            text = { Text("¿Estás seguro de que deseas eliminar este snippet? Esta acción no se puede deshacer.", color = TextSecondary) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showDeleteDialog = false
-                        onDeleteClick()
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
-                ) {
-                    Text("Eliminar", color = Color.White)
-                }
+        DeleteConfirmDialog(
+            title = "Eliminar snippet",
+            text = "¿Estás seguro de que deseas eliminar este snippet? Esta acción no se puede deshacer.",
+            onConfirm = {
+                showDeleteDialog = false
+                onDeleteClick()
             },
-            dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancelar", color = TextSecondary)
-                }
-            },
-            containerColor = SurfaceDark
+            onDismiss = { showDeleteDialog = false }
         )
     }
 

@@ -24,8 +24,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.components.EmptyView
+import com.devvault.app.ui.components.ErrorView
+import com.devvault.app.ui.components.LoadingView
+import com.devvault.app.ui.components.SearchBar
 import com.devvault.app.ui.home.components.HomeHeader
-import com.devvault.app.ui.home.components.SearchBar
 import com.devvault.app.ui.home.components.SnippetListItem
 import com.devvault.app.ui.theme.DevVaultTheme
 import com.devvault.app.ui.theme.TextSecondary
@@ -102,42 +105,19 @@ fun HomeScreen(
         ) {
             when (uiState) {
                 // Estado 1: Cargando datos de Room
-                is HomeUiState.Loading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
+                is HomeUiState.Loading -> LoadingView()
+
                 // Estado 2: Error
-                is HomeUiState.Error -> {
-                    Text(
-                        text = uiState.mensaje,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
+                is HomeUiState.Error -> ErrorView(uiState.mensaje)
+
                 // Estado 3: Éxito (con datos, vacío o sin resultados de búsqueda)
                 is HomeUiState.Success -> {
                     when {
                         uiState.isEmpty && !uiState.isSearching -> {
-                            Text(
-                                text = "Aún no tienes snippets guardados.\n¡Agrega uno nuevo!",
-                                color = TextSecondary,
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
+                            EmptyView("Aún no tienes snippets guardados.\n¡Agrega uno nuevo!")
                         }
                         uiState.isEmpty && uiState.isSearching -> {
-                            Text(
-                                text = "No se encontraron resultados para\n\"${uiState.searchQuery}\"",
-                                color = TextSecondary,
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.align(Alignment.Center)
-                            )
+                            EmptyView("No se encontraron resultados para\n\"${uiState.searchQuery}\"")
                         }
                         else -> {
                             LazyColumn(

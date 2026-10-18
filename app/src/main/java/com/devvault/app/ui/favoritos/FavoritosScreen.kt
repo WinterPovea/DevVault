@@ -19,8 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.components.EmptyView
+import com.devvault.app.ui.components.ErrorView
+import com.devvault.app.ui.components.LoadingView
+import com.devvault.app.ui.components.SearchBar
 import com.devvault.app.ui.components.SnippetCard
-import com.devvault.app.ui.home.components.SearchBar
 import com.devvault.app.ui.theme.DevVaultTheme
 import com.devvault.app.util.copiarAlPortapapeles
 
@@ -118,24 +121,15 @@ fun FavoritosScreen(
             ) {
                 when (uiState) {
                     is FavoritosUiState.Loading -> {
-                        CircularProgressIndicator(
-                            color = colors.primary,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        LoadingView()
                     }
                     is FavoritosUiState.Error -> {
-                        Text(
-                            text = uiState.mensaje,
-                            color = MaterialTheme.colorScheme.error,
-                            modifier = Modifier.align(Alignment.Center)
-                        )
+                        ErrorView(mensaje = uiState.mensaje)
                     }
                     is FavoritosUiState.Success -> {
                         if (uiState.isEmpty) {
-                            Text(
-                                text = if (searchQuery.isEmpty()) "Aún no tienes comandos favoritos." else "No se encontraron resultados.",
-                                color = colors.onSurfaceVariant,
-                                modifier = Modifier.align(Alignment.Center)
+                            EmptyView(
+                                mensaje = if (searchQuery.isEmpty()) "Aún no tienes comandos favoritos." else "No se encontraron resultados."
                             )
                         } else {
                             LazyColumn(

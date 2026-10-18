@@ -58,7 +58,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.devvault.app.ui.theme.DevVaultTheme
+import com.devvault.app.ui.components.CategoriaCard
+import com.devvault.app.ui.components.DeleteConfirmDialog
+import com.devvault.app.ui.components.EmptyView
+import com.devvault.app.ui.components.ErrorView
+import com.devvault.app.ui.components.LoadingView
+import com.devvault.app.ui.components.SearchBar
+import com.devvault.app.ui.theme.resolverColorCategoria
 
 @Composable
 fun CategoriasRoute(
@@ -120,13 +126,21 @@ fun CategoriasScreen(
     }
 
     if (mostrarDialogoEliminar && seleccionada != null) {
-        EliminarCategoriaDialog(
-            categoria = seleccionada,
-            onDismiss = { mostrarDialogoEliminar = false },
+        val total = seleccionada.totalSnippets
+        val mensajeSnippets = when (total) {
+            0 -> "Esta categoría no contiene snippets."
+            1 -> "Se eliminará 1 snippet asociado debido a la clave foránea en cascada (FK CASCADE)."
+            else -> "Se eliminarán sus $total snippets asociados debido a la clave foránea en cascada (FK CASCADE)."
+        }
+        DeleteConfirmDialog(
+            titulo = "¿Eliminar categoría?",
+            mensaje = "¿Estás seguro de que deseas eliminar \"${seleccionada.nombre}\"?",
+            mensajeAdvertencia = mensajeSnippets,
             onConfirmar = {
                 onEliminarCategoria(seleccionada.id)
                 mostrarDialogoEliminar = false
-            }
+            },
+            onDismiss = { mostrarDialogoEliminar = false }
         )
     }
 
@@ -173,23 +187,9 @@ fun CategoriasScreen(
         }
     ) { paddingValues ->
         when (uiState) {
-            is CategoriasUiState.Loading -> Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                Alignment.Center
-            ) {
-                CircularProgressIndicator()
-            }
+            is CategoriasUiState.Loading -> LoadingView(Modifier.padding(paddingValues))
 
-            is CategoriasUiState.Error -> Box(
-                Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                Alignment.Center
-            ) {
-                Text(uiState.mensaje, color = MaterialTheme.colorScheme.error)
-            }
+            is CategoriasUiState.Error -> ErrorView(uiState.mensaje, Modifier.padding(paddingValues))
 
             is CategoriasUiState.Success -> Column(
                 modifier = Modifier
@@ -197,19 +197,14 @@ fun CategoriasScreen(
                     .padding(paddingValues)
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             ) {
-                OutlinedTextField(
-                    value = uiState.busqueda,
-                    onValueChange = onBusquedaChange,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("Buscar categoría") },
-                    trailingIcon = { Icon(Icons.Filled.Search, contentDescription = "Buscar") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(14.dp)
+                SearchBar(
+                    query = uiState.busqueda,
+                    onQueryChange = onBusquedaChange,
+                    onClearClick = { onBusquedaChange("") },
+                    placeholder = "Buscar categoría"
                 )
                 if (uiState.categorias.isEmpty()) {
-                    Box(Modifier.fillMaxSize(), Alignment.Center) {
-                        Text("No hay categorías", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                    EmptyView("No hay categorías")
                 } else {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(2),
@@ -218,107 +213,19 @@ fun CategoriasScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         items(uiState.categorias, key = { it.id }) { categoria ->
-                            CategoriaItemCard(
-                                categoria = categoria,
+                            CategoriaCard(
+                                nombre = categoria.nombre,
+                                totalSnippets = categoria.totalSnippets,
+                                color = resolverColorCategoria(categoria.color),
                                 estaSeleccionada = categoria.id == uiState.seleccionadaId,
                                 haySeleccionActiva = uiState.seleccionadaId != null,
-                                onToggleSeleccion = onToggleSeleccion,
+                                onToggleSeleccion = { onToggleSeleccion(categoria.id) },
                                 onClick = { onCategoriaClick(categoria.id) }
                             )
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun CategoriaItemCard(
-    categoria: CategoriaConConteo,
-    estaSeleccionada: Boolean,
-    haySeleccionActiva: Boolean,
-    onToggleSeleccion: (Long) -> Unit,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val colorCategoria = resolverColorCategoria(categoria.color)
-    val borde = if (estaSeleccionada) {
-        BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
-    } else {
-        BorderStroke(1.dp, colorCategoria)
-    }
-
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .combinedClickable(
-                onClick = {
-                    if (haySeleccionActiva) {
-                        onToggleSeleccion(categoria.id)
-                    } else {
-                        onClick()
-                    }
-                },
-                onLongClick = {
-                    onToggleSeleccion(categoria.id)
-                }
-            ),
-        shape = RoundedCornerShape(14.dp),
-        border = borde,
-        colors = CardDefaults.cardColors(
-            containerColor = if (estaSeleccionada) {
-                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.2f)
-            } else {
-                MaterialTheme.colorScheme.surfaceContainerHighest
-            }
-        )
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(colorCategoria),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = categoria.nombre.take(1).uppercase(),
-                        color = Color(0xFF05070D),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-
-                CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 0.dp) {
-                    Checkbox(
-                        checked = estaSeleccionada,
-                        onCheckedChange = { onToggleSeleccion(categoria.id) },
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            Text(
-                text = categoria.nombre,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(top = 12.dp)
-            )
-
-            Text(
-                text = if (categoria.totalSnippets == 1) "1 snippet" else "${categoria.totalSnippets} snippets",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
         }
     }
 }
@@ -372,58 +279,6 @@ private fun EditarCategoriaDialog(
             }
         }
     )
-}
-
-@Composable
-private fun EliminarCategoriaDialog(
-    categoria: CategoriaConConteo,
-    onDismiss: () -> Unit,
-    onConfirmar: () -> Unit
-) {
-    val total = categoria.totalSnippets
-    val mensajeSnippets = when (total) {
-        0 -> "Esta categoría no contiene snippets."
-        1 -> "Se eliminará 1 snippet asociado debido a la clave foránea en cascada (FK CASCADE)."
-        else -> "Se eliminarán sus $total snippets asociados debido a la clave foránea en cascada (FK CASCADE)."
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("¿Eliminar categoría?") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("¿Estás seguro de que deseas eliminar \"${categoria.nombre}\"?")
-                Text(
-                    text = mensajeSnippets,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (total > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirmar) {
-                Text("Eliminar", color = MaterialTheme.colorScheme.error)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("Cancelar")
-            }
-        }
-    )
-}
-
-private fun resolverColorCategoria(colorLong: Long): Color {
-    return try {
-        if (colorLong == 0L) {
-            Color.Gray
-        } else {
-            val color = Color(colorLong)
-            if (color.alpha == 0f) Color.Gray else color
-        }
-    } catch (_: Exception) {
-        Color.Gray
-    }
 }
 
 @Preview(showBackground = true)
