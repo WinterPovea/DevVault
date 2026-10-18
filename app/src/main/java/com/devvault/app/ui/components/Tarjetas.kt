@@ -39,7 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.model.SnippetUi
 import com.devvault.app.ui.theme.DevVaultTheme
 import com.devvault.app.ui.add_snippet.CodeSyntaxVisualTransformation
 
@@ -139,7 +139,7 @@ fun CategoriaCard(
 
 @Composable
 fun SnippetCard(
-    snippet: SnippetEntity,
+    snippet: SnippetUi,
     onToggleFavorito: () -> Unit,
     onCopiar: () -> Unit,
     modifier: Modifier = Modifier,
@@ -212,7 +212,7 @@ private fun TarjetasPreview() {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             CategoriaCard("Docker", 20, Color(0xFF2496ED), onClick = {})
             SnippetCard(
-                snippet = SnippetEntity(1, 1, "Crear imagen", "docker build -t app .", null, true, 0L),
+                snippet = SnippetUi(1, 1, "Crear imagen", "docker build -t app .", null, "", 0L, true, 0L),
                 onToggleFavorito = {},
                 onCopiar = {},
                 onEditar = {},

@@ -3,6 +3,7 @@ package com.devvault.app.ui.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.devvault.app.data.repository.DevVaultRepository
+import com.devvault.app.ui.home.mapper.toUiList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
@@ -41,7 +42,7 @@ class HomeViewModel @Inject constructor(
     ) { currentQuery, snippetsResult ->
         HomeUiState.Success(
             searchQuery = currentQuery,
-            snippets = snippetsResult
+            snippets = snippetsResult.toUiList()
         ) as HomeUiState
     }.catch { e ->
         emit(HomeUiState.Error(e.message ?: "Error al cargar snippets"))

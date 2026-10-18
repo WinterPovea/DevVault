@@ -14,12 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.model.SnippetUi
 import com.devvault.app.ui.theme.DevVaultTheme
 
 @Composable
 fun SnippetListItem(
-    snippet: SnippetEntity,
+    snippet: SnippetUi,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -58,7 +58,7 @@ fun SnippetListItem(
 @Composable
 private fun SnippetListItemPreview() {
     DevVaultTheme {
-        val dummySnippet = SnippetEntity(
+        val dummySnippet = SnippetUi(
             id = 1L,
             categoriaId = 1L,
             titulo = "Delete DB Container",

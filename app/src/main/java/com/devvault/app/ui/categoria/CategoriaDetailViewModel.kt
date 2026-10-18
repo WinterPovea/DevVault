@@ -8,6 +8,9 @@ import com.devvault.app.data.local.entity.CategoriaEntity
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
 import com.devvault.app.navigation.DevVaultRoute
+import com.devvault.app.ui.categoria.mapper.toEntity
+import com.devvault.app.ui.categoria.mapper.toUiList
+import com.devvault.app.ui.model.SnippetUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -50,18 +53,21 @@ class CategoriaDetailViewModel @Inject constructor(
             if (categoria == null) {
                 CategoriaDetailUiState.Error("Categoría no encontrada")
             } else {
-                CategoriaDetailUiState.Success(categoria.nombre, snippets)
+                CategoriaDetailUiState.Success(
+                    categoria.nombre,
+                    snippets.toUiList(categoria.nombre, categoria.color)
+                )
             }
         }
             .catch { emit(CategoriaDetailUiState.Error(it.message ?: "Error desconocido")) }
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), CategoriaDetailUiState.Loading)
 
-    fun onToggleFavorito(snippet: SnippetEntity) {
+    fun onToggleFavorito(snippet: SnippetUi) {
         viewModelScope.launch {
             val nuevoEstado = !snippet.esFavorito
             val nuevaFecha = if (nuevoEstado) System.currentTimeMillis() else null
             repository.actualizarSnippet(
-                snippet.copy(
+                snippet.toEntity().copy(
                     esFavorito = nuevoEstado,
                     fechaFavorito = nuevaFecha
                 )
@@ -69,15 +75,15 @@ class CategoriaDetailViewModel @Inject constructor(
         }
     }
 
-    fun onEditarSnippet(snippet: SnippetEntity, titulo: String, contenido: String) {
+    fun onEditarSnippet(snippet: SnippetUi, titulo: String, contenido: String) {
         viewModelScope.launch {
-            repository.actualizarSnippet(snippet.copy(titulo = titulo.trim(), contenido = contenido))
+            repository.actualizarSnippet(snippet.toEntity().copy(titulo = titulo.trim(), contenido = contenido))
         }
     }
 
-    fun onEliminarSnippet(snippet: SnippetEntity) {
+    fun onEliminarSnippet(snippet: SnippetUi) {
         viewModelScope.launch {
-            repository.eliminarSnippet(snippet)
+            repository.eliminarSnippet(snippet.toEntity())
         }
     }
 }

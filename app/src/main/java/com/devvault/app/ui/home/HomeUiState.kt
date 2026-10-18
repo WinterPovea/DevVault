@@ -1,12 +1,12 @@
 package com.devvault.app.ui.home
 
-import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.model.SnippetUi
 
 sealed interface HomeUiState {
     data object Loading : HomeUiState
     data class Success(
         val searchQuery: String = "",
-        val snippets: List<SnippetEntity> = emptyList()
+        val snippets: List<SnippetUi> = emptyList()
     ) : HomeUiState {
         val isSearching: Boolean
             get() = searchQuery.isNotBlank()

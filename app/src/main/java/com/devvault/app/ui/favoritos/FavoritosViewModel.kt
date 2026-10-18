@@ -2,8 +2,10 @@ package com.devvault.app.ui.favoritos
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
+import com.devvault.app.ui.favoritos.mapper.toEntity
+import com.devvault.app.ui.favoritos.mapper.toUi
+import com.devvault.app.ui.model.SnippetUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +23,7 @@ import javax.inject.Inject
 sealed interface FavoritosUiState {
     data object Loading : FavoritosUiState
     data class Success(
-        val favoritos: List<SnippetEntity> = emptyList(),
+        val favoritos: List<SnippetUi> = emptyList(),
         val searchQuery: String = ""
     ) : FavoritosUiState {
         val isEmpty: Boolean
@@ -60,7 +62,7 @@ class FavoritosViewModel @Inject constructor(
         val ordenados = filtrados.sortedByDescending { it.fechaFavorito ?: 0L }
 
         FavoritosUiState.Success(
-            favoritos = ordenados,
+            favoritos = ordenados.map { it.toUi() },
             searchQuery = query
         ) as FavoritosUiState
     }.catch { e ->
@@ -75,13 +77,13 @@ class FavoritosViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    fun alternarFavorito(snippet: SnippetEntity) {
+    fun alternarFavorito(snippet: SnippetUi) {
         viewModelScope.launch {
             val nuevoEstadoFavorito = !snippet.esFavorito
             val tiempoActual = if (nuevoEstadoFavorito) System.currentTimeMillis() else null
 
             repository.actualizarSnippet(
-                snippet.copy(
+                snippet.toEntity().copy(
                     esFavorito = nuevoEstadoFavorito,
                     fechaFavorito = tiempoActual
                 )

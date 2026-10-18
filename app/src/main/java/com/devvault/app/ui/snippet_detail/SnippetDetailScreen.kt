@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.model.SnippetUi
 import com.devvault.app.ui.add_snippet.CodeSyntaxVisualTransformation
 import com.devvault.app.ui.components.DeleteConfirmDialog
 import com.devvault.app.ui.components.ErrorView
@@ -217,12 +217,13 @@ private fun SnippetDetailScreenPreview() {
     DevVaultTheme {
         SnippetDetailScreen(
             uiState = SnippetDetailUiState.Success(
-                snippet = SnippetEntity(
+                snippet = SnippetUi(
                     id = 1L,
                     categoriaId = 1L,
                     titulo = "Configuración Room DB",
                     contenido = "@Database(entities = [Snippet::class], version = 1)\nabstract class AppDatabase : RoomDatabase()",
                     lenguaje = "Kotlin",
+                    categoriaNombre = "Kotlin",
                     esFavorito = true,
                     fechaCreacion = 0L,
                     fechaFavorito = 100L

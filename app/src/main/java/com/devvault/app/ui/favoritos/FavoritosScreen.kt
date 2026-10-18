@@ -18,7 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.model.SnippetUi
 import com.devvault.app.ui.components.EmptyView
 import com.devvault.app.ui.components.ErrorView
 import com.devvault.app.ui.components.LoadingView
@@ -67,7 +67,7 @@ fun FavoritosScreen(
     uiState: FavoritosUiState,
     onSearchQueryChange: (String) -> Unit,
     onCopyClick: (String) -> Unit,
-    onFavoriteClick: (SnippetEntity) -> Unit,
+    onFavoriteClick: (SnippetUi) -> Unit,
     onBackClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -160,7 +160,7 @@ private fun FavoritosScreenPreview() {
         FavoritosScreen(
             uiState = FavoritosUiState.Success(
                 favoritos = listOf(
-                    SnippetEntity(
+                    SnippetUi(
                         id = 1L,
                         categoriaId = 1L,
                         titulo = "Docker compose up",
@@ -170,7 +170,7 @@ private fun FavoritosScreenPreview() {
                         fechaCreacion = 0L,
                         fechaFavorito = 100L
                     ),
-                    SnippetEntity(
+                    SnippetUi(
                         id = 2L,
                         categoriaId = 2L,
                         titulo = "List pods",

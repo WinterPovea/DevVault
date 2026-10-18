@@ -29,9 +29,9 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.devvault.app.data.local.entity.CategoriaEntity
 import com.devvault.app.ui.components.ErrorView
 import com.devvault.app.ui.components.LoadingView
+import com.devvault.app.ui.model.CategoriaUi
 import com.devvault.app.ui.theme.BackgroundDark
 import com.devvault.app.ui.theme.CategoryPalette
 import com.devvault.app.ui.theme.CodeBackground
@@ -450,7 +450,7 @@ private fun AddSnippetScreenPreview() {
                 contenido = "fun main() {\n    println(\"Hello DevVault!\")\n}",
                 selectedCategoriaId = 1L,
                 categorias = listOf(
-                    CategoriaEntity(id = 1L, nombre = "Kotlin", color = 0xFF7F52FF)
+                    CategoriaUi(id = 1L, nombre = "Kotlin", colorLong = 0xFF7F52FF)
                 )
             ),
             snackbarHostState = remember { SnackbarHostState() },

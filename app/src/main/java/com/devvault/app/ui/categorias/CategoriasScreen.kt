@@ -43,6 +43,7 @@ import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import com.devvault.app.ui.model.CategoriaUi
 import com.devvault.app.ui.theme.DevVaultTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -233,7 +234,7 @@ fun CategoriasScreen(
 
 @Composable
 private fun EditarCategoriaDialog(
-    categoria: CategoriaConConteo,
+    categoria: CategoriaUi,
     onDismiss: () -> Unit,
     onGuardar: (String) -> Unit
 ) {
@@ -290,10 +291,10 @@ private fun CategoriasScreenPreview() {
             CategoriasScreen(
                 uiState = CategoriasUiState.Success(
                     categorias = listOf(
-                        CategoriaConConteo(1, "Docker", 0xFF2496ED, 20),
-                        CategoriaConConteo(2, "Git", 0xFFF1502F, 1),
-                        CategoriaConConteo(3, "SQL", 0xFF4479A1, 15),
-                        CategoriaConConteo(4, "Kotlin", 0xFF7F52FF, 7)
+                        CategoriaUi(1, "Docker", 0xFF2496ED, 20),
+                        CategoriaUi(2, "Git", 0xFFF1502F, 1),
+                        CategoriaUi(3, "SQL", 0xFF4479A1, 15),
+                        CategoriaUi(4, "Kotlin", 0xFF7F52FF, 7)
                     ),
                     busqueda = "",
                     seleccionadaId = 2L

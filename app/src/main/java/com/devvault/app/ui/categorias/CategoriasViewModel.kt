@@ -3,6 +3,8 @@ package com.devvault.app.ui.categorias
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.devvault.app.data.repository.DevVaultRepository
+import com.devvault.app.ui.categorias.mapper.toUi
+import com.devvault.app.ui.model.CategoriaUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.channels.Channel
@@ -42,7 +44,7 @@ class CategoriasViewModel @Inject constructor(
             val conteos = snippets.groupingBy { it.categoriaId }.eachCount()
             val filtradas = categorias
                 .filter { it.nombre.contains(texto.trim(), ignoreCase = true) }
-                .map { CategoriaConConteo(it.id, it.nombre, it.color, conteos[it.id] ?: 0) }
+                .map { it.toUi(conteos[it.id] ?: 0) }
             CategoriasUiState.Success(
                 categorias = filtradas,
                 busqueda = texto,

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.devvault.app.data.local.entity.CategoriaEntity
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
+import com.devvault.app.ui.add_snippet.mapper.toUiList
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -35,11 +36,12 @@ class AddSnippetViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             repository.obtenerCategorias().collect { categorias ->
+                val categoriasUi = categorias.toUiList()
                 _uiState.update { current ->
                     val existing = (current as? AddSnippetUiState.Success) ?: AddSnippetUiState.Success()
                     existing.copy(
-                        categorias = categorias,
-                        selectedCategoriaId = existing.selectedCategoriaId ?: categorias.firstOrNull()?.id
+                        categorias = categoriasUi,
+                        selectedCategoriaId = existing.selectedCategoriaId ?: categoriasUi.firstOrNull()?.id
                     )
                 }
             }

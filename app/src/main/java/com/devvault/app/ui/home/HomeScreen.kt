@@ -23,7 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.model.SnippetUi
 import com.devvault.app.ui.components.EmptyView
 import com.devvault.app.ui.components.ErrorView
 import com.devvault.app.ui.components.LoadingView
@@ -144,9 +144,9 @@ fun HomeScreen(
 // --- PREVIEWS (Obligatorios según el proyecto) ---
 
 private val dummySnippets = listOf(
-    SnippetEntity(1L, 1L, "Delete DB Container", "docker rm -f db", "Bash", false, 0L),
-    SnippetEntity(2L, 2L, "Check K8s Pods", "kubectl get pods", "Bash", false, 0L),
-    SnippetEntity(3L, 3L, "Room Query Flow", "@Query...", "Kotlin", true, 0L)
+    SnippetUi(1L, 1L, "Delete DB Container", "docker rm -f db", "Bash", "Bash", 0L, false, 0L),
+    SnippetUi(2L, 2L, "Check K8s Pods", "kubectl get pods", "Bash", "Bash", 0L, false, 0L),
+    SnippetUi(3L, 3L, "Room Query Flow", "@Query...", "Kotlin", "Kotlin", 0L, true, 0L)
 )
 
 @Preview(showBackground = true, backgroundColor = 0xFF141A2B)

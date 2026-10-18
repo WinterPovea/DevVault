@@ -1,16 +1,13 @@
 package com.devvault.app.ui.categorias
 
-data class CategoriaConConteo(
-    val id: Long,
-    val nombre: String,
-    val color: Long,
-    val totalSnippets: Int
-)
+import com.devvault.app.ui.model.CategoriaUi
+
+typealias CategoriaConConteo = CategoriaUi
 
 sealed interface CategoriasUiState {
     data object Loading : CategoriasUiState
     data class Success(
-        val categorias: List<CategoriaConConteo>,
+        val categorias: List<CategoriaUi>,
         val busqueda: String,
         val seleccionadaId: Long? = null
     ) : CategoriasUiState

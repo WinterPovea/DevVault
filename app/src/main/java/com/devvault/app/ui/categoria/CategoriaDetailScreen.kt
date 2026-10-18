@@ -37,8 +37,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.devvault.app.data.local.entity.SnippetEntity
+import com.devvault.app.ui.components.DeleteConfirmDialog
 import com.devvault.app.ui.components.SnippetCard
+import com.devvault.app.ui.model.SnippetUi
 import com.devvault.app.ui.theme.DevVaultTheme
 import com.devvault.app.util.copiarAlPortapapeles
 
@@ -78,13 +79,13 @@ fun CategoriaDetailRoute(
 fun CategoriaDetailScreen(
     uiState: CategoriaDetailUiState,
     onBack: () -> Unit,
-    onToggleFavorito: (SnippetEntity) -> Unit,
-    onEditar: (SnippetEntity, String, String) -> Unit,
-    onEliminar: (SnippetEntity) -> Unit,
+    onToggleFavorito: (SnippetUi) -> Unit,
+    onEditar: (SnippetUi, String, String) -> Unit,
+    onEliminar: (SnippetUi) -> Unit,
     onCopiar: (String) -> Unit
 ) {
-    var snippetAEditar by remember { mutableStateOf<SnippetEntity?>(null) }
-    var snippetAEliminar by remember { mutableStateOf<SnippetEntity?>(null) }
+    var snippetAEditar by remember { mutableStateOf<SnippetUi?>(null) }
+    var snippetAEliminar by remember { mutableStateOf<SnippetUi?>(null) }
 
     snippetAEditar?.let { snippet ->
         EditarSnippetDialog(
@@ -98,23 +99,14 @@ fun CategoriaDetailScreen(
     }
 
     snippetAEliminar?.let { snippet ->
-        AlertDialog(
-            onDismissRequest = { snippetAEliminar = null },
-            title = { Text("¿Eliminar snippet?") },
-            text = { Text("Se eliminará \"${snippet.titulo}\". Esta acción no se puede deshacer.") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onEliminar(snippet)
-                        snippetAEliminar = null
-                    }
-                ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
-                }
+        DeleteConfirmDialog(
+            titulo = "¿Eliminar snippet?",
+            mensaje = "Se eliminará \"${snippet.titulo}\". Esta acción no se puede deshacer.",
+            onConfirmar = {
+                onEliminar(snippet)
+                snippetAEliminar = null
             },
-            dismissButton = {
-                TextButton(onClick = { snippetAEliminar = null }) { Text("Cancelar") }
-            }
+            onDismiss = { snippetAEliminar = null }
         )
     }
 
@@ -176,7 +168,7 @@ fun CategoriaDetailScreen(
 
 @Composable
 private fun EditarSnippetDialog(
-    snippet: SnippetEntity,
+    snippet: SnippetUi,
     onDismiss: () -> Unit,
     onGuardar: (String, String) -> Unit
 ) {
@@ -226,8 +218,8 @@ private fun CategoriaDetailScreenPreview() {
                 uiState = CategoriaDetailUiState.Success(
                     nombreCategoria = "Docker",
                     snippets = listOf(
-                        SnippetEntity(1, 1, "Crear imagen", "docker build -t app .", null, true, 0L),
-                        SnippetEntity(2, 1, "Levantar servicio", "docker-compose up -d", null, false, 0L)
+                        SnippetUi(1, 1, "Crear imagen", "docker build -t app .", null, "Docker", 0L, true, 0L),
+                        SnippetUi(2, 1, "Levantar servicio", "docker-compose up -d", null, "Docker", 0L, false, 0L)
                     )
                 ),
                 onBack = {},

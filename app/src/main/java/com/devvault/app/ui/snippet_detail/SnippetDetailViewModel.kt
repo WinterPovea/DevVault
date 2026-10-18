@@ -7,6 +7,8 @@ import androidx.navigation.toRoute
 import com.devvault.app.data.local.entity.SnippetEntity
 import com.devvault.app.data.repository.DevVaultRepository
 import com.devvault.app.navigation.DevVaultRoute
+import com.devvault.app.ui.snippet_detail.mapper.toEntity
+import com.devvault.app.ui.snippet_detail.mapper.toUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -46,9 +48,11 @@ class SnippetDetailViewModel @Inject constructor(
             val snippet = repository.obtenerSnippetPorId(id)
             if (snippet != null) {
                 val categoria = repository.obtenerCategoriaPorId(snippet.categoriaId)
+                val catNombre = categoria?.nombre ?: snippet.lenguaje ?: "Snippet"
+                val catColor = categoria?.color ?: 0xFF7F52FF
                 _uiState.value = SnippetDetailUiState.Success(
-                    snippet = snippet,
-                    categoriaNombre = categoria?.nombre ?: snippet.lenguaje ?: "Snippet"
+                    snippet = snippet.toUi(catNombre, catColor),
+                    categoriaNombre = catNombre
                 )
             } else {
                 _uiState.value = SnippetDetailUiState.Error("Snippet no encontrado")
@@ -65,7 +69,7 @@ class SnippetDetailViewModel @Inject constructor(
                 esFavorito = nuevoFavorito,
                 fechaFavorito = fechaFavorito
             )
-            repository.actualizarSnippet(updated)
+            repository.actualizarSnippet(updated.toEntity())
             _uiState.value = current.copy(snippet = updated)
             _events.send(
                 SnippetDetailUiEvent.ShowToast(
@@ -78,7 +82,7 @@ class SnippetDetailViewModel @Inject constructor(
     fun eliminarSnippet() {
         val current = _uiState.value as? SnippetDetailUiState.Success ?: return
         viewModelScope.launch {
-            repository.eliminarSnippet(current.snippet)
+            repository.eliminarSnippet(current.snippet.toEntity())
             _events.send(SnippetDetailUiEvent.ShowToast("Snippet eliminado"))
             _events.send(SnippetDetailUiEvent.NavigateBack)
         }
